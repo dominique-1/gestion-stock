@@ -3,29 +3,6 @@ builder = "nixpacks"
 
 [deploy]
 healthcheckPath = "/"
-healthcheckTimeout = 100
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 10
-
-[[services]]
-name = "app"
-
-[services.variables]
-APP_ENV = "production"
-APP_DEBUG = "false"
-APP_KEY = "base64:"
-DB_CONNECTION = "sqlite"
-DB_DATABASE = "/tmp/database.sqlite"
-
-[phases.setup]
-nixPkgs = ["php82", "php82Packages.composer", "nodejs", "sqlite"]
-
-[phases.build]
-cmds = [
-  "composer install --no-dev --optimize-autoloader",
-  "npm install",
-  "npm run build"
-]
 
 [start]
 cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
