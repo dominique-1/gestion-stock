@@ -18,7 +18,7 @@ DB_CONNECTION = "sqlite"
 DB_DATABASE = "/tmp/database.sqlite"
 
 [phases.setup]
-nixPkgs = ["php", "phpExtensions.composer", "nodejs", "sqlite"]
+nixPkgs = ["php82", "php82Packages.composer", "nodejs", "sqlite"]
 
 [phases.build]
 cmds = [
