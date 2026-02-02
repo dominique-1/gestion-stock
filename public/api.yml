@@ -1,0 +1,291 @@
+openapi: 3.0.0
+info:
+  title: Gestion de Stock API
+  version: 1.0.0
+  description: API REST pour la gestion de stock avec Laravel
+
+servers:
+  - url: http://localhost/api/v1
+
+paths:
+  /auth/login:
+    post:
+      summary: Connexion utilisateur
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+              required: [email, password]
+      responses:
+        200:
+          description: Token + utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  token: { type: string }
+
+  /auth/logout:
+    post:
+      summary: Déconnexion
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        200: { description: Déconnecté }
+
+  /auth/me:
+    get:
+      summary: Infos utilisateur connecté
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Utilisateur
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /products:
+    get:
+      summary: Liste produits (recherche/filtre)
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: category_id
+          in: query
+          schema: { type: integer }
+        - name: low_stock
+          in: query
+          schema: { type: boolean }
+        - name: overstock
+          in: query
+          schema: { type: boolean }
+        - name: expiring_soon
+          in: query
+          schema: { type: boolean }
+      responses:
+        200:
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+    post:
+      summary: Créer produit
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      responses:
+        201: { description: Créé }
+
+  /products/{id}:
+    get:
+      summary: Détail produit
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        200:
+          description: Produit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+
+  /select/products:
+    get:
+      summary: Liste produits pour select/autocomplete
+      tags: [Products]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        200:
+          description: Liste simple id/label
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    label: { type: string }
+
+  /categories:
+    get:
+      summary: Liste catégories
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tree
+          in: query
+          schema: { type: boolean }
+      responses:
+        200:
+          description: Liste ou arbre
+    post:
+      summary: Créer catégorie
+      tags: [Categories]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string }
+                parent_id: { type: integer }
+              required: [name]
+      responses:
+        201: { description: Créée }
+
+  /movements:
+    get:
+      summary: Historique mouvements
+      tags: [Movements]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: product_id
+          in: query
+          schema: { type: integer }
+        - name: type
+          in: query
+          schema: { type: string, enum: [in, out] }
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        200:
+          description: Liste paginée
+    post:
+      summary: Enregistrer mouvement
+      tags: [Movements]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id: { type: integer }
+                type: { type: string, enum: [in, out] }
+                reason: { type: string }
+                quantity: { type: integer }
+                moved_at: { type: string, format: date-time }
+                note: { type: string }
+              required: [product_id, type, reason, quantity, moved_at]
+      responses:
+        201: { description: Créé }
+
+  /dashboard/summary:
+    get:
+      summary: Résumé dashboard
+      tags: [Dashboard]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Statistiques clés
+
+  /exports/stock.csv:
+    get:
+      summary: Export CSV du stock
+      tags: [Exports]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Fichier CSV
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string, enum: [admin, manager, viewer] }
+        is_active: { type: boolean }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        barcode: { type: string }
+        supplier: { type: string }
+        price: { type: number, format: decimal }
+        category_id: { type: integer }
+        stock_min: { type: integer }
+        stock_optimal: { type: integer }
+        current_stock: { type: integer }
+        expires_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ProductInput:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        barcode: { type: string }
+        supplier: { type: string }
+        price: { type: number, format: decimal }
+        category_id: { type: integer }
+        stock_min: { type: integer }
+        stock_optimal: { type: integer }
+        current_stock: { type: integer }
+        expires_at: { type: string, format: date-time }
+      required: [name, stock_min, stock_optimal, current_stock]

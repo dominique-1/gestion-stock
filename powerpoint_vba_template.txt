@@ -1,0 +1,43 @@
+# Template PowerPoint - Script VBA pour Création Automatique
+
+Sub CreatePresentationAutomatically()
+    Dim ppt As Presentation
+    Dim slide As Slide
+    Dim i As Integer
+    
+    Set ppt = ActivePresentation
+    
+    ' Créer 20 slides avec le contenu prédéfini
+    For i = 1 To 20
+        Set slide = ppt.Slides.Add(i, ppLayoutTitleAndContent)
+        
+        ' Ajouter le titre selon le slide
+        Select Case i
+            Case 1
+                slide.Shapes.Title.TextFrame.TextRange.Text = "Système de Gestion de Stock Intelligente"
+                slide.Shapes(2).TextFrame.TextRange.Text = "Optimisation, Prédiction et Automatisation"
+            Case 2
+                slide.Shapes.Title.TextFrame.TextRange.Text = "Plan de la Présentation"
+                slide.Shapes(2).TextFrame.TextRange.Text = "1. Introduction et Contexte" & vbCrLf & "2. Fonctionnalités Principales" & vbCrLf & "3. Architecture Technique"
+            ' ... continuer pour tous les slides
+        End Select
+        
+        ' Ajouter une animation de fondu
+        slide.Shapes(1).AnimationSettings.EntryEffect = ppEffectFade
+        slide.Shapes(2).AnimationSettings.EntryEffect = ppEffectFade
+    Next i
+    
+    ' Configurer les transitions
+    For Each slide In ppt.Slides
+        slide.SlideShowTransition.EntryEffect = ppEffectFade
+        slide.SlideShowTransition.Speed = ppTransitionSpeedMedium
+    Next slide
+    
+    MsgBox "Présentation créée avec succès !", vbInformation
+End Sub
+
+# Instructions pour utiliser ce template:
+# 1. Ouvrez PowerPoint
+# 2. Appuyez sur Alt+F11 pour ouvrir VBA
+# 3. Coller ce code
+# 4. Exécuter la macro CreatePresentationAutomatically
