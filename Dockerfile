@@ -5,7 +5,7 @@ FROM php:8.1-apache
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     locales \
     zip \
@@ -15,10 +15,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer les extensions PHP une par une
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install zip \
+# Installer les extensions PHP essentielles seulement
+RUN docker-php-ext-install zip \
     && docker-php-ext-install pdo \
     && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install pdo_pgsql \
