@@ -18,16 +18,12 @@
                     <p class="text-gray-300 text-lg">Surveillez et gérez toutes vos alertes stock</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <!-- Messages flash -->
+                    <!-- Messages flash avec classes pour les toasts -->
                     @if(session()->has('success'))
-                    <div class="bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-300 px-6 py-3 rounded-2xl">
-                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                    </div>
+                    <div class="alert-success hidden">{{ session('success') }}</div>
                     @endif
                     @if(session()->has('error'))
-                    <div class="bg-red-500/20 backdrop-blur-md border border-red-500/30 text-red-300 px-6 py-3 rounded-2xl">
-                        <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
-                    </div>
+                    <div class="alert-error hidden">{{ session('error') }}</div>
                     @endif
                 </div>
             </div>
@@ -49,7 +45,7 @@
                 <i class="fas fa-plus-circle mr-2 group-hover:rotate-90 transition-transform duration-300"></i>
                 <span>Créer</span>
             </a>
-            <a href="{{ route('alerts.send-emails') }}" class="group bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/50 flex items-center justify-center">
+            <a href="{{ route('alerts.send-emails') }}" onclick="confirmSend('Êtes-vous sûr de vouloir envoyer les alertes par email à tous les destinataires ?', function() { window.location.href = '{{ route('alerts.send-emails') }}'; }); return false;" class="group bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/50 flex items-center justify-center">
                 <i class="fas fa-envelope mr-2 group-hover:scale-110 transition-transform duration-300"></i>
                 <span>Envoyer</span>
             </a>
@@ -61,7 +57,7 @@
                 <i class="fas fa-chart-bar mr-2 group-hover:scale-110 transition-transform duration-300"></i>
                 <span>Stats</span>
             </a>
-            <a href="{{ route('alerts.test-email') }}" class="group bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/50 flex items-center justify-center">
+            <a href="{{ route('alerts.test-email') }}" onclick="confirmSend('Êtes-vous sûr de vouloir envoyer un email de test ? Cela enverra un email de test à votre adresse.', function() { window.location.href = '{{ route('alerts.test-email') }}'; }); return false;" class="group bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-yellow-500/50 flex items-center justify-center">
                 <i class="fas fa-paper-plane mr-2 group-hover:scale-110 transition-transform duration-300"></i>
                 <span>Test</span>
             </a>
@@ -243,10 +239,10 @@
                                     </form>
                                 @endif
                                 
-                                <form method="POST" action="{{ route('alerts.destroy', $alert->id) }}" class="inline" onsubmit="return confirm('Supprimer cette alerte ?')">
+                                <form method="POST" action="{{ route('alerts.destroy', $alert->id) }}" class="inline" id="deleteForm-{{ $alert->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                                    <button type="button" onclick="confirmDelete('Êtes-vous sûr de vouloir supprimer cette alerte de type \"{{ $alert->type }}\" ? Cette action est irréversible.', function() { document.getElementById('deleteForm-{{ $alert->id }}').submit(); })" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                         <i class="fas fa-trash text-red-400"></i>
                                     </button>
                                 </form>
@@ -289,4 +285,7 @@
     animation-delay: 2s;
 }
 </style>
+
+<!-- Inclure le script du modal de confirmation -->
+<script src="{{ asset('js/confirm-modal.js') }}"></script>
 @endsection

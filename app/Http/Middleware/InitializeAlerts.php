@@ -18,10 +18,17 @@ class InitializeAlerts
                     'level' => 'critical',
                     'message' => 'Stock faible pour Clavier mécanique (1/5)',
                     'product_id' => 1,
-                    'product' => (object)['name' => 'Clavier mécanique'],
+                    'product' => (object)[
+                        'id' => 1,
+                        'name' => 'Clavier mécanique',
+                        'stock' => 1,
+                        'unit' => 'pièce(s)'
+                    ],
                     'is_read' => false,
                     'email_sent_at' => now()->subMinutes(30),
                     'created_at' => now()->subHours(2),
+                    'updated_at' => now()->subHour(),
+                    'creator' => (object)['name' => 'Admin'],
                 ],
                 (object)[
                     'id' => 2,
@@ -29,10 +36,17 @@ class InitializeAlerts
                     'level' => 'warning',
                     'message' => 'Surstock pour Souris sans fil (25/20)',
                     'product_id' => 2,
-                    'product' => (object)['name' => 'Souris sans fil'],
+                    'product' => (object)[
+                        'id' => 2,
+                        'name' => 'Souris sans fil',
+                        'stock' => 25,
+                        'unit' => 'pièce(s)'
+                    ],
                     'is_read' => false,
                     'email_sent_at' => now()->subHour(),
                     'created_at' => now()->subHours(3),
+                    'updated_at' => now()->subMinutes(30),
+                    'creator' => (object)['name' => 'Admin'],
                 ],
                 (object)[
                     'id' => 3,
@@ -44,6 +58,8 @@ class InitializeAlerts
                     'is_read' => true,
                     'email_sent_at' => null,
                     'created_at' => now()->subDays(1),
+                    'updated_at' => now()->subDays(1),
+                    'creator' => (object)['name' => 'System'],
                 ],
             ];
             session()->put('alerts', $defaultAlerts);

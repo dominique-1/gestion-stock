@@ -17,10 +17,85 @@ Route::get('/', function () {
     return view('landing');
 });
 
+Route::get('/demo-messages', function () {
+    // Simuler des messages flash pour la démo
+    if (request()->has('flash')) {
+        if (request()->get('flash') === 'success') {
+            return redirect()->route('demo.messages')->with('success', 'Ceci est un message de succès de Laravel !');
+        } elseif (request()->get('flash') === 'error') {
+            return redirect()->route('demo.messages')->with('error', 'Ceci est un message d\'erreur de Laravel !');
+        }
+    }
+    return view('demo-messages');
+})->name('demo.messages');
+
+Route::get('/reset-alerts', function () {
+    // Forcer la réinitialisation des alertes
+    session()->forget('alerts');
+    return redirect()->route('alerts.index')->with('success', 'Alertes réinitialisées avec les nouvelles propriétés !');
+})->name('reset.alerts');
+
+Route::get('/reset-movements', function () {
+    // Forcer la réinitialisation des mouvements
+    session()->forget('movements');
+    return redirect()->route('movements.index')->with('success', 'Mouvements réinitialisés avec succès !');
+})->name('reset.movements');
+
+Route::get('/init-movements', function () {
+    // Forcer l'initialisation immédiate des mouvements
+    $defaultMovements = [
+        (object)[
+            'id' => 1,
+            'product' => (object)[
+                'id' => 1,
+                'name' => 'Laptop Pro 15"', 
+                'barcode' => 'LP15-001'
+            ],
+            'type' => 'out',
+            'quantity' => 2,
+            'reason' => 'Vente client',
+            'moved_at' => now()->subHours(1),
+            'user' => (object)['name' => 'Admin'],
+        ],
+        (object)[
+            'id' => 2,
+            'product' => (object)[
+                'id' => 2,
+                'name' => 'Moniteur 27"', 
+                'barcode' => 'MON27-001'
+            ],
+            'type' => 'in',
+            'quantity' => 5,
+            'reason' => 'Réception fournisseur',
+            'moved_at' => now()->subHours(3),
+            'user' => (object)['name' => 'Admin'],
+        ],
+        (object)[
+            'id' => 3,
+            'product' => (object)[
+                'id' => 3,
+                'name' => 'Clavier mécanique', 
+                'barcode' => 'KEY-MEC-001'
+            ],
+            'type' => 'out',
+            'quantity' => 1,
+            'reason' => 'Retour client',
+            'moved_at' => now()->subHours(5),
+            'user' => (object)['name' => 'Admin'],
+        ],
+    ];
+    session()->put('movements', $defaultMovements);
+    return redirect()->route('movements.index')->with('success', '3 mouvements initialisés avec succès !');
+})->name('init.movements');
+
 // Login routes (toujours accessibles)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Routes publiques (sans authentification)
+Route::get('/movements', [StockMovementController::class, 'index'])->name('movements.index');
+Route::get('/movements/{movement}', [StockMovementController::class, 'show'])->name('movements.show');
 
 // Authenticated routes
 Route::middleware('session')->group(function () {
@@ -35,8 +110,12 @@ Route::middleware('session')->group(function () {
     // Categories
     Route::resource('categories', CategoryController::class);
     
-    // Stock Movements
-    Route::resource('movements', StockMovementController::class)->only(['index', 'show', 'create', 'store', 'edit', 'update']);
+    // Stock Movements (CRUD complet)
+    Route::get('/movements/create', [StockMovementController::class, 'create'])->name('movements.create');
+    Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store');
+    Route::get('/movements/{movement}/edit', [StockMovementController::class, 'edit'])->name('movements.edit');
+    Route::put('/movements/{movement}', [StockMovementController::class, 'update'])->name('movements.update');
+    Route::delete('/movements/{movement}', [StockMovementController::class, 'destroy'])->name('movements.destroy');
     
     // Inventories
     Route::resource('inventories', InventoryController::class);

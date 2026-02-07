@@ -9,27 +9,55 @@ class StockMovementController extends Controller
 {
     public function index()
     {
-        // Utiliser les mouvements de la session s'ils existent, sinon les données par défaut
-        $movements = session()->get('movements', [
-            (object)[
-                'id' => 1,
-                'product' => (object)['name' => 'Laptop Pro 15"'],
-                'type' => 'out',
-                'quantity' => 2,
-                'reason' => 'Vente client',
-                'moved_at' => now()->subHours(1),
-                'user' => (object)['name' => 'Admin'],
-            ],
-            (object)[
-                'id' => 2,
-                'product' => (object)['name' => 'Moniteur 27"'],
-                'type' => 'in',
-                'quantity' => 5,
-                'reason' => 'Réception fournisseur',
-                'moved_at' => now()->subHours(3),
-                'user' => (object)['name' => 'Admin'],
-            ],
-        ]);
+        // Utiliser les mouvements de la session (initialisés par le middleware)
+        $movements = session()->get('movements', []);
+        
+        // Si aucun mouvement en session, forcer l'initialisation
+        if (empty($movements)) {
+            $defaultMovements = [
+                (object)[
+                    'id' => 1,
+                    'product' => (object)[
+                        'id' => 1,
+                        'name' => 'Laptop Pro 15"', 
+                        'barcode' => 'LP15-001'
+                    ],
+                    'type' => 'out',
+                    'quantity' => 2,
+                    'reason' => 'Vente client',
+                    'moved_at' => now()->subHours(1),
+                    'user' => (object)['name' => 'Admin'],
+                ],
+                (object)[
+                    'id' => 2,
+                    'product' => (object)[
+                        'id' => 2,
+                        'name' => 'Moniteur 27"', 
+                        'barcode' => 'MON27-001'
+                    ],
+                    'type' => 'in',
+                    'quantity' => 5,
+                    'reason' => 'Réception fournisseur',
+                    'moved_at' => now()->subHours(3),
+                    'user' => (object)['name' => 'Admin'],
+                ],
+                (object)[
+                    'id' => 3,
+                    'product' => (object)[
+                        'id' => 3,
+                        'name' => 'Clavier mécanique', 
+                        'barcode' => 'KEY-MEC-001'
+                    ],
+                    'type' => 'out',
+                    'quantity' => 1,
+                    'reason' => 'Retour client',
+                    'moved_at' => now()->subHours(5),
+                    'user' => (object)['name' => 'Admin'],
+                ],
+            ];
+            session()->put('movements', $defaultMovements);
+            $movements = $defaultMovements;
+        }
 
         return view('movements.index', compact('movements'));
     }
@@ -54,39 +82,24 @@ class StockMovementController extends Controller
             'reason' => 'nullable|string',
         ]);
 
-        // Simuler la sauvegarde en ajoutant à une session (pour la démo)
-        $movements = session()->get('movements', [
-            (object)[
-                'id' => 1,
-                'product' => (object)['name' => 'Laptop Pro 15"'],
-                'type' => 'out',
-                'quantity' => 2,
-                'reason' => 'Vente client',
-                'moved_at' => now()->subHours(1),
-                'user' => (object)['name' => 'Admin'],
-            ],
-            (object)[
-                'id' => 2,
-                'product' => (object)['name' => 'Moniteur 27"'],
-                'type' => 'in',
-                'quantity' => 5,
-                'reason' => 'Réception fournisseur',
-                'moved_at' => now()->subHours(3),
-                'user' => (object)['name' => 'Admin'],
-            ],
-        ]);
+        // Récupérer les mouvements existants de la session
+        $movements = session()->get('movements', []);
 
         // Trouver le produit correspondant
         $products = [
-            1 => (object)['name' => 'Laptop Pro 15"'],
-            2 => (object)['name' => 'Moniteur 27"'],
-            3 => (object)['name' => 'Clavier mécanique'],
+            1 => (object)['id' => 1, 'name' => 'Laptop Pro 15"', 'barcode' => 'LP15-001'],
+            2 => (object)['id' => 2, 'name' => 'Moniteur 27"', 'barcode' => 'MON27-001'],
+            3 => (object)['id' => 3, 'name' => 'Clavier mécanique', 'barcode' => 'KEY-MEC-001'],
         ];
 
         // Créer le nouveau mouvement
         $newMovement = (object)[
-            'id' => count($movements) + 1,
-            'product' => $products[$request->product_id] ?? (object)['name' => 'Produit inconnu'],
+            'id' => count($movements) > 0 ? max(array_column($movements, 'id')) + 1 : 1,
+            'product' => $products[$request->product_id] ?? (object)[
+                'id' => 999, 
+                'name' => 'Produit inconnu', 
+                'barcode' => 'UNKNOWN'
+            ],
             'type' => $request->type,
             'quantity' => $request->quantity,
             'reason' => $request->reason,
@@ -97,7 +110,7 @@ class StockMovementController extends Controller
         // Ajouter le mouvement
         $movements[] = $newMovement;
         
-        // Sauvegarder en session pour la démo
+        // Sauvegarder en session
         session()->put('movements', $movements);
 
         return redirect()->route('movements.index')->with('success', 'Mouvement enregistré avec succès.');
@@ -158,5 +171,44 @@ class StockMovementController extends Controller
 
         // Simuler la mise à jour (pour la démo)
         return redirect()->route('movements.index')->with('success', 'Mouvement mis à jour avec succès.');
+    }
+
+    public function destroy($id)
+    {
+        // Récupérer les mouvements de la session
+        $movements = session()->get('movements', []);
+        
+        // Debug: afficher les mouvements avant suppression
+        \Log::info('Mouvements avant suppression', [
+            'id_to_delete' => $id,
+            'movements_count' => count($movements),
+            'movements_ids' => array_column($movements, 'id')
+        ]);
+        
+        // Filtrer pour supprimer le mouvement avec l'ID correspondant
+        $originalCount = count($movements);
+        $movements = array_filter($movements, function($movement) use ($id) {
+            return $movement->id != $id;
+        });
+        
+        // Réindexer le tableau
+        $movements = array_values($movements);
+        
+        // Debug: afficher les mouvements après suppression
+        \Log::info('Mouvements après suppression', [
+            'id_deleted' => $id,
+            'original_count' => $originalCount,
+            'new_count' => count($movements),
+            'deleted' => $originalCount > count($movements)
+        ]);
+        
+        // Sauvegarder en session
+        session()->put('movements', $movements);
+        
+        $message = $originalCount > count($movements) 
+            ? 'Mouvement supprimé avec succès.' 
+            : 'Mouvement non trouvé.';
+            
+        return redirect()->route('movements.index')->with('success', $message);
     }
 }

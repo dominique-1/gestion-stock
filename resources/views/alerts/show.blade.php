@@ -99,10 +99,17 @@
                     <h3 class="text-sm font-semibold text-blue-900 mb-2">
                         <i class="fas fa-box mr-2"></i>Produit associé
                     </h3>
-                    @if($alert->product)
+                    @if($alert->product && isset($alert->product->id))
                         <a href="{{ route('products.show', $alert->product->id) }}" class="text-blue-600 hover:text-blue-800 font-medium">
                             {{ $alert->product->name }}
                         </a>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Stock actuel : {{ $alert->product->stock ?? 'N/A' }} {{ $alert->product->unit ?? '' }}
+                        </p>
+                    @elseif($alert->product)
+                        <span class="text-blue-600 font-medium">
+                            {{ $alert->product->name }}
+                        </span>
                         <p class="text-sm text-blue-700 mt-1">
                             Stock actuel : {{ $alert->product->stock ?? 'N/A' }} {{ $alert->product->unit ?? '' }}
                         </p>
@@ -149,12 +156,21 @@
                     </div>
                     <div>
                         <span class="text-gray-500">Modifiée le :</span>
-                        <span class="ml-2 text-gray-900">{{ $alert->updated_at->format('d/m/Y H:i:s') }}</span>
+                        <span class="ml-2 text-gray-900">{{ isset($alert->updated_at) ? $alert->updated_at->format('d/m/Y H:i:s') : 'Jamais' }}</span>
                     </div>
-                    @if($alert->creator)
+                    @if(isset($alert->creator) && $alert->creator)
                     <div>
                         <span class="text-gray-500">Créée par :</span>
                         <span class="ml-2 text-gray-900">{{ $alert->creator->name ?? 'N/A' }}</span>
+                    </div>
+                    @else
+                    <div>
+                        <span class="text-gray-500">Créée par :</span>
+                        <span class="ml-2 text-gray-900">
+                            <a href="{{ route('reset.alerts') }}" class="text-blue-600 hover:text-blue-800 underline">
+                                Réinitialiser les données
+                            </a>
+                        </span>
                     </div>
                     @endif
                 </div>

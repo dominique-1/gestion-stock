@@ -18,18 +18,18 @@
                     <p class="text-gray-300 text-lg">Organisation hiérarchique des produits</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    @if(session('success'))
-                    <div class="bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-300 px-6 py-3 rounded-2xl">
-                        <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
-                    </div>
+                    <!-- Messages flash avec classes pour les toasts -->
+                    @if(session()->has('success'))
+                    <div class="alert-success hidden">{{ session('success') }}</div>
                     @endif
-                    @if(session('error'))
-                    <div class="bg-red-500/20 backdrop-blur-md border border-red-500/30 text-red-300 px-6 py-3 rounded-2xl">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>{{ session('error') }}
-                    </div>
+                    @if(session()->has('error'))
+                    <div class="alert-error hidden">{{ session('error') }}</div>
+                    @endif
+                    @if(session()->has('debug'))
+                    <div class="alert-debug hidden">{{ session('debug') }}</div>
                     @endif
                     <a href="{{ route('categories.create') }}" class="group bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-emerald-500/50">
-                        <i class="fas fa-folder-plus mr-3 group-hover:rotate-12 transition-transform duration-300"></i>
+                        <i class="fas fa-plus-circle mr-3 group-hover:rotate-90 transition-transform duration-300"></i>
                         Nouvelle Catégorie
                     </a>
                 </div>
@@ -86,10 +86,10 @@
                                                class="w-10 h-10 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                                 <i class="fas fa-edit text-blue-400"></i>
                                             </a>
-                                            <form method="POST" action="{{ route('categories.destroy', $category->id) }}" class="inline" onsubmit="return confirm('Supprimer cette catégorie ?')">
+                                            <form method="POST" action="{{ route('categories.destroy', $category->id) }}" class="inline" id="deleteForm-{{ $category->id }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                                                <button type="button" onclick="confirmDelete('Êtes-vous sûr de vouloir supprimer la catégorie \"{{ $category->name }}\" ? Cette action est irréversible et affectera tous les produits associés.', function() { document.getElementById('deleteForm-{{ $category->id }}').submit(); })" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                                     <i class="fas fa-trash text-red-400"></i>
                                                 </button>
                                             </form>
@@ -116,10 +116,10 @@
                                                 <a href="{{ route('categories.edit', $child->id) }}" class="text-blue-400 hover:text-blue-300">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
-                                                <form method="POST" action="{{ route('categories.destroy', $child->id) }}" class="inline" onsubmit="return confirm('Supprimer cette sous-catégorie ?')">
+                                                <form method="POST" action="{{ route('categories.destroy', $child->id) }}" class="inline" id="deleteForm-{{ $child->id }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-400 hover:text-red-300">
+                                                    <button type="button" onclick="confirmDelete('Êtes-vous sûr de vouloir supprimer la sous-catégorie \"{{ $child->name }}\" ? Cette action est irréversible.', function() { document.getElementById('deleteForm-{{ $child->id }}').submit(); })" class="text-red-400 hover:text-red-300">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -237,4 +237,7 @@
     animation: gradient 3s ease infinite;
 }
 </style>
+
+<!-- Inclure le script du modal de confirmation -->
+<script src="{{ asset('js/confirm-modal.js') }}"></script>
 @endsection

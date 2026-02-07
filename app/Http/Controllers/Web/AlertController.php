@@ -21,10 +21,17 @@ class AlertController extends Controller
                 'level' => 'critical',
                 'message' => 'Stock faible pour Clavier mécanique (1/5)',
                 'product_id' => 1,
-                'product' => (object)['name' => 'Clavier mécanique'],
+                'product' => (object)[
+                    'id' => 1,
+                    'name' => 'Clavier mécanique',
+                    'stock' => 1,
+                    'unit' => 'pièce(s)'
+                ],
                 'is_read' => false,
                 'email_sent_at' => now()->subMinutes(30),
                 'created_at' => now()->subHours(2),
+                'updated_at' => now()->subHour(),
+                'creator' => (object)['name' => 'Admin'],
             ],
             (object)[
                 'id' => 2,
@@ -32,10 +39,17 @@ class AlertController extends Controller
                 'level' => 'warning',
                 'message' => 'Surstock pour Souris sans fil (25/20)',
                 'product_id' => 2,
-                'product' => (object)['name' => 'Souris sans fil'],
+                'product' => (object)[
+                    'id' => 2,
+                    'name' => 'Souris sans fil',
+                    'stock' => 25,
+                    'unit' => 'pièce(s)'
+                ],
                 'is_read' => false,
                 'email_sent_at' => now()->subHour(),
                 'created_at' => now()->subHours(3),
+                'updated_at' => now()->subMinutes(30),
+                'creator' => (object)['name' => 'Admin'],
             ],
             (object)[
                 'id' => 3,
@@ -47,6 +61,8 @@ class AlertController extends Controller
                 'is_read' => true,
                 'email_sent_at' => null,
                 'created_at' => now()->subDays(1),
+                'updated_at' => now()->subDays(1),
+                'creator' => (object)['name' => 'System'],
             ],
         ];
     }
@@ -135,18 +151,41 @@ class AlertController extends Controller
                 'product_id' => 'nullable|numeric',
             ]);
 
-            $validated['is_read'] = false;
-            $validated['created_by'] = session('user.id');
-            $validated['id'] = rand(1000, 9999);
-            $validated['created_at'] = now();
-            $validated['email_sent_at'] = null;
+            // Créer l'objet alerte
+            $alertData = [
+                'id' => rand(1000, 9999),
+                'type' => $validated['type'],
+                'level' => $validated['level'],
+                'message' => $validated['message'],
+                'product_id' => $validated['product_id'],
+                'is_read' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'email_sent_at' => null,
+                'creator' => (object)['name' => 'Admin'],
+            ];
 
-            // Ajouter à la session au lieu de la BDD
+            // Ajouter l'objet produit si un product_id est spécifié
+            if ($validated['product_id']) {
+                $products = $this->getProducts();
+                $product = collect($products)->firstWhere('id', $validated['product_id']);
+                if ($product) {
+                    $alertData['product'] = (object)[
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'stock' => rand(1, 50), // Stock aléatoire pour la démo
+                        'unit' => 'pièce(s)'
+                    ];
+                } else {
+                    $alertData['product'] = null;
+                }
+            } else {
+                $alertData['product'] = null;
+            }
+
+            // Ajouter à la session
             $alerts = $this->getAlerts();
-            $validated['id'] = rand(1000, 9999);
-            $validated['created_at'] = now();
-            $validated['email_sent_at'] = null;
-            $alerts[] = (object)$validated;
+            $alerts[] = (object)$alertData;
             session()->put('alerts', $alerts);
 
             return redirect()->route('alerts.index')->with('success', 'Alerte créée avec succès.');
@@ -170,6 +209,14 @@ class AlertController extends Controller
         
         if (!$alert) {
             return redirect()->route('alerts.index')->with('error', 'Alerte non trouvée.');
+        }
+        
+        // S'assurer que l'alerte a toutes les propriétés nécessaires
+        if (!isset($alert->updated_at)) {
+            $alert->updated_at = $alert->created_at;
+        }
+        if (!isset($alert->creator)) {
+            $alert->creator = (object)['name' => 'Admin'];
         }
         
         return view('alerts.show', compact('alert'));
@@ -216,6 +263,7 @@ class AlertController extends Controller
                     $a->message = $validated['message'];
                     $a->product_id = $validated['product_id'];
                     $a->is_read = $validated['is_read'];
+                    $a->updated_at = now(); // Mettre à jour la date de modification
                     break;
                 }
             }

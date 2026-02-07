@@ -73,19 +73,29 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
         
+        // Log pour diagnostic
+        \Log::info('Tentative suppression catégorie: ' . $category->name);
+        \Log::info('Sous-catégories: ' . $category->children()->count());
+        \Log::info('Produits: ' . $category->products()->count());
+        
         // Vérifier si la catégorie a des sous-catégories
         if ($category->children()->count() > 0) {
+            \Log::info('Blocage: catégorie a des sous-catégories');
             return redirect()->route('categories.index')
-                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des sous-catégories.');
+                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des sous-catégories.')
+                ->with('debug', 'Sous-catégories: ' . $category->children()->pluck('name')->join(', '));
         }
 
         // Vérifier si la catégorie a des produits
         if ($category->products()->count() > 0) {
+            \Log::info('Blocage: catégorie a des produits');
             return redirect()->route('categories.index')
-                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des produits.');
+                ->with('error', 'Impossible de supprimer cette catégorie car elle contient des produits.')
+                ->with('debug', 'Produits: ' . $category->products()->pluck('name')->join(', '));
         }
 
         $category->delete();
+        \Log::info('Catégorie supprimée avec succès: ' . $category->name);
 
         return redirect()->route('categories.index')->with('success', 'Catégorie supprimée avec succès.');
     }

@@ -264,5 +264,9 @@
             });
         });
     </script>
+
+    <!-- Scripts globaux pour les modales et notifications -->
+    <script src="{{ asset('js/confirm-modal.js') }}"></script>
+    <script src="{{ asset('js/toast-notifications.js') }}"></script>
 </body>
 </html>
