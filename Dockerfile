@@ -13,23 +13,25 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpq-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        zip \
-        pdo \
-        pdo_mysql \
-        pdo_pgsql \
-        mbstring \
-        opcache \
-        bcmath \
-    && a2enmod rewrite
+    && rm -rf /var/lib/apt/lists/*
+
+# Installer les extensions PHP une par une
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install pdo \
+    && docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install pdo_pgsql \
+    && docker-php-ext-install mbstring \
+    && docker-php-ext-install opcache \
+    && docker-php-ext-install bcmath
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configurer Apache
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && a2enmod rewrite
 
 # Copier le code de l'application
 COPY . /var/www/html
