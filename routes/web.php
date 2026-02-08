@@ -95,7 +95,21 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Routes publiques (sans authentification)
 Route::get('/movements', [StockMovementController::class, 'index'])->name('movements.index');
+Route::get('/movements/create', [StockMovementController::class, 'create'])->name('movements.create');
 Route::get('/movements/{movement}', [StockMovementController::class, 'show'])->name('movements.show');
+Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store');
+Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
+Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
+Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
+Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
+Route::get('/inventories/{inventory}/edit', [InventoryController::class, 'edit'])->name('inventories.edit');
+Route::delete('/inventories/{id}', [InventoryController::class, 'destroy'])->name('inventories.destroy');
+
+// Test d'archivage
+Route::post('/inventories/{id}/archive', [InventoryController::class, 'archive'])->name('inventories.archive');
+Route::post('/inventories/{id}/restore', [InventoryController::class, 'restore'])->name('inventories.restore');
+Route::post('/inventories/{id}/close', [InventoryController::class, 'close'])->name('inventories.close');
+Route::put('/inventories/{id}', [InventoryController::class, 'update'])->name('inventories.update');
 
 // Authenticated routes
 Route::middleware('session')->group(function () {
@@ -110,18 +124,10 @@ Route::middleware('session')->group(function () {
     // Categories
     Route::resource('categories', CategoryController::class);
     
-    // Stock Movements (CRUD complet)
-    Route::get('/movements/create', [StockMovementController::class, 'create'])->name('movements.create');
-    Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store');
+    // Stock Movements (seulement edit/update/destroy nécessitent une auth)
     Route::get('/movements/{movement}/edit', [StockMovementController::class, 'edit'])->name('movements.edit');
     Route::put('/movements/{movement}', [StockMovementController::class, 'update'])->name('movements.update');
     Route::delete('/movements/{movement}', [StockMovementController::class, 'destroy'])->name('movements.destroy');
-    
-    // Inventories
-    Route::resource('inventories', InventoryController::class);
-    Route::post('inventories/{inventory}/close', [InventoryController::class, 'close'])->name('inventories.close');
-    Route::post('inventories/{inventory}/archive', [InventoryController::class, 'archive'])->name('inventories.archive');
-    Route::post('inventories/{inventory}/restore', [InventoryController::class, 'restore'])->name('inventories.restore');
     
     // Alerts
     Route::resource('alerts', AlertController::class);

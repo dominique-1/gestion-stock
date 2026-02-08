@@ -102,12 +102,8 @@
             </div>
         </div>
 
-        <!-- Grille d'inventaires spectaculaire -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             @forelse($inventories as $inventory)
-                @if(!request('filter') || 
-                  (request('filter') == 'active' && in_array($inventory->status, ['in_progress', 'completed'])) ||
-                  (request('filter') == 'archived' && $inventory->status == 'archived'))
                 <div class="group relative">
                     <!-- Fond animé -->
                     <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-indigo-600/20 to-purple-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
@@ -192,10 +188,18 @@
                                         </button>
                                     </form>
                                 @endif
-                                <form action="{{ route('inventories.destroy', $inventory->id) }}" method="POST" class="flex-1" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet inventaire ? Cette action est irréversible.')">
+                                @if($inventory->status == 'archived')
+                                    <form action="{{ route('inventories.restore', $inventory->id) }}" method="POST" class="flex-1">
+                                        @csrf
+                                        <button type="submit" class="w-full bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded-xl font-semibold transition-all duration-300 group-hover:scale-110">
+                                            <i class="fas fa-undo mr-2"></i>Restaurer
+                                        </button>
+                                    </form>
+                                @endif
+                                <form action="{{ route('inventories.destroy', $inventory->id) }}" method="POST" class="flex-1" id="deleteForm-{{ $inventory->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl font-semibold transition-all duration-300 group-hover:scale-110">
+                                    <button type="button" onclick="showDeleteModal({{ $inventory->id }}, 'Êtes-vous sûr de vouloir supprimer cet inventaire ? Cette action est irréversible.', 'deleteForm-{{ $inventory->id }}')" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl font-semibold transition-all duration-300 group-hover:scale-110">
                                         <i class="fas fa-trash mr-2"></i>Supprimer
                                     </button>
                                 </form>
@@ -203,7 +207,6 @@
                         </div>
                     </div>
                 </div>
-                @endif
             @empty
                 <div class="col-span-full text-center py-20">
                     <div class="w-32 h-32 mx-auto mb-6 relative">
@@ -214,9 +217,6 @@
                     </div>
                     <h3 class="text-2xl font-bold text-white mb-2">Aucun inventaire trouvé</h3>
                     <p class="text-gray-400 mb-6">Commencez par créer votre premier inventaire</p>
-                    <a href="{{ route('inventories.create') }}" class="inline-flex bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-blue-500/50">
-                        <i class="fas fa-plus-circle mr-3"></i>Créer un inventaire
-                    </a>
                 </div>
             @endforelse
         </div>
@@ -238,4 +238,7 @@
     animation-delay: 2s;
 }
 </style>
+
+<!-- Inclure le composant de modal de suppression -->
+@include('components.delete-modal')
 @endsection

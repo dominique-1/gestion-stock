@@ -22,6 +22,9 @@
             @method('DELETE')
             <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" onclick="return confirm('Supprimer cet inventaire ?')">Supprimer</button>
         </form>
+        <a href="{{ route('inventories.index', ['filter' => 'archived']) }}" class="inline ml-2 bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+            <i class="fas fa-archive mr-2"></i>Voir les archives
+        </a>
     </div>
 </div>
 
@@ -81,17 +84,15 @@
                     <td class="p-3">{{ $line->justification ?? '-' }}</td>
                     @if($inventory->status === 'draft')
                         <td class="p-3">
-                            <form method="POST" action="{{ route('inventories.lines.destroy', [$inventory, $line]) }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700">Supprimer</button>
-                            </form>
+                            <span class="text-gray-500 text-xs">Non disponible</span>
                         </td>
                     @endif
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="p-3 text-center text-gray-500">Aucune ligne</td>
+                    <td colspan="5" class="p-6 text-center text-gray-500">
+                        Aucune ligne d'inventaire enregistrée
+                    </td>
                 </tr>
             @endforelse
         </tbody>

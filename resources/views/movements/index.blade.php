@@ -25,6 +25,7 @@
                     @if(session()->has('error'))
                     <div class="alert-error hidden">{{ session('error') }}</div>
                     @endif
+                    
                     <a href="{{ route('movements.create') }}" class="group bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-orange-500/50">
                         <i class="fas fa-plus-circle mr-3 group-hover:rotate-90 transition-transform duration-300"></i>
                         Nouveau Mouvement
@@ -214,7 +215,7 @@
                                     <form method="POST" action="{{ route('movements.destroy', $movement->id) }}" class="inline" id="deleteForm-{{ $movement->id }}">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" onclick="testSuppression({{ $movement->id }})" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                                        <button type="button" onclick="showDeleteModal({{ $movement->id }}, 'Êtes-vous sûr de vouloir supprimer ce mouvement de stock ? Cette action est irréversible.', 'deleteForm-{{ $movement->id }}')" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                             <i class="fas fa-trash text-red-400"></i>
                                         </button>
                                     </form>
@@ -261,19 +262,6 @@
 }
 </style>
 
-<!-- Inclure le script du modal de confirmation -->
-<script src="{{ asset('js/confirm-modal.js') }}"></script>
-<script>
-function testSuppression(id) {
-    console.log('Test suppression pour mouvement ID:', id);
-    alert('Test: Vous voulez supprimer le mouvement ID ' + id + ' ?');
-    
-    // Test direct de soumission du formulaire
-    if (confirm('Confirmer la suppression du mouvement ' + id + ' ?')) {
-        console.log('Envoi du formulaire:', 'deleteForm-' + id);
-        document.getElementById('deleteForm-' + id).submit();
-    }
-}
-</script>
-
+<!-- Inclure le composant de modal de suppression -->
+@include('components.delete-modal')
 @endsection

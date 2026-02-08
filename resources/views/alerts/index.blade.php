@@ -242,7 +242,7 @@
                                 <form method="POST" action="{{ route('alerts.destroy', $alert->id) }}" class="inline" id="deleteForm-{{ $alert->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('Êtes-vous sûr de vouloir supprimer cette alerte de type \"{{ $alert->type }}\" ? Cette action est irréversible.', function() { document.getElementById('deleteForm-{{ $alert->id }}').submit(); })" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                                    <button type="button" onclick="showDeleteModal({{ $alert->id }}, 'Êtes-vous sûr de vouloir supprimer l\'alerte \"{{ $alert->type }}\" ? Cette action est irréversible.', 'deleteForm-{{ $alert->id }}')" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                         <i class="fas fa-trash text-red-400"></i>
                                     </button>
                                 </form>
@@ -286,6 +286,6 @@
 }
 </style>
 
-<!-- Inclure le script du modal de confirmation -->
-<script src="{{ asset('js/confirm-modal.js') }}"></script>
+<!-- Inclure le composant de modal de suppression -->
+@include('components.delete-modal')
 @endsection

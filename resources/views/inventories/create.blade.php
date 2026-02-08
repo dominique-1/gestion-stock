@@ -25,6 +25,13 @@
             <textarea name="note" id="note" rows="3" class="w-full px-3 py-2 border rounded" placeholder="Description de l'inventaire...">{{ old('note') }}</textarea>
         </div>
         
+        <div class="mt-4">
+            <label class="flex items-center">
+                <input type="checkbox" name="archive" value="1" class="mr-2">
+                <span class="text-gray-700">Archiver cet inventaire directement</span>
+            </label>
+        </div>
+        
         <div class="mt-6 flex justify-end space-x-4">
             <a href="{{ route('inventories.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Annuler</a>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Créer</button>

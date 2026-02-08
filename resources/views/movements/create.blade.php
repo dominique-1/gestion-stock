@@ -37,7 +37,7 @@
         <div class="max-w-4xl mx-auto">
             <!-- Formulaire spectaculaire -->
             <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20">
-                <form method="POST" action="{{ route('movements.store') }}" class="space-y-6">
+                <form method="POST" action="{{ route('movements.store') }}" class="space-y-6" autocomplete="off">
                     @csrf
                     
                     <!-- Messages d'erreur -->
@@ -69,7 +69,7 @@
                             <select name="product_id" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" required>
                                 <option value="">Sélectionner un produit</option>
                                 @foreach($products as $product)
-                                    <option value="{{ $product->id }}" class="text-gray-900">{{ $product->name }} (Stock: {{ $product->current_stock ?? 0 }})</option>
+                                    <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }} class="text-gray-900">{{ $product->name }} (Stock: {{ $product->current_stock ?? 0 }})</option>
                                 @endforeach
                             </select>
                         </div>
@@ -79,11 +79,11 @@
                             <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Type de mouvement</label>
                             <div class="flex space-x-6">
                                 <label class="flex items-center bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 cursor-pointer hover:bg-white/20 transition-all duration-300">
-                                    <input type="radio" name="type" value="in" class="mr-3" required>
+                                    <input type="radio" name="type" value="in" class="mr-3" {{ old('type') == 'in' ? 'checked' : '' }} required>
                                     <span class="text-white font-semibold">📥 Entrée</span>
                                 </label>
                                 <label class="flex items-center bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 cursor-pointer hover:bg-white/20 transition-all duration-300">
-                                    <input type="radio" name="type" value="out" class="mr-3" required>
+                                    <input type="radio" name="type" value="out" class="mr-3" {{ old('type') == 'out' ? 'checked' : '' }} required>
                                     <span class="text-white font-semibold">📤 Sortie</span>
                                 </label>
                             </div>
@@ -92,26 +92,26 @@
                         <!-- Quantité -->
                         <div>
                             <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Quantité</label>
-                            <input type="number" name="quantity" min="1" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Entrez la quantité" required>
+                            <input type="number" name="quantity" min="1" value="{{ old('quantity') }}" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Entrez la quantité" required>
                         </div>
 
                         <!-- Date -->
                         <div>
                             <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Date du mouvement</label>
-                            <input type="datetime-local" name="moved_at" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" value="{{ now()->format('Y-m-d\TH:i') }}">
+                            <input type="datetime-local" name="moved_at" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" value="{{ old('moved_at') }}">
                         </div>
                     </div>
 
                     <!-- Motif -->
                     <div>
                         <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Motif</label>
-                        <textarea name="reason" rows="3" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Décrivez le motif du mouvement..."></textarea>
+                        <textarea name="reason" rows="3" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Décrivez le motif du mouvement...">{{ old('reason') }}</textarea>
                     </div>
 
                     <!-- Notes -->
                     <div>
                         <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Notes (optionnel)</label>
-                        <textarea name="note" rows="2" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Informations complémentaires..."></textarea>
+                        <textarea name="note" rows="2" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300" placeholder="Informations complémentaires...">{{ old('note') }}</textarea>
                     </div>
 
                     <!-- Boutons d'action -->

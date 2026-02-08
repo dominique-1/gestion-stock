@@ -9,55 +9,8 @@ class StockMovementController extends Controller
 {
     public function index()
     {
-        // Utiliser les mouvements de la session (initialisés par le middleware)
+        // Récupérer les mouvements de la session
         $movements = session()->get('movements', []);
-        
-        // Si aucun mouvement en session, forcer l'initialisation
-        if (empty($movements)) {
-            $defaultMovements = [
-                (object)[
-                    'id' => 1,
-                    'product' => (object)[
-                        'id' => 1,
-                        'name' => 'Laptop Pro 15"', 
-                        'barcode' => 'LP15-001'
-                    ],
-                    'type' => 'out',
-                    'quantity' => 2,
-                    'reason' => 'Vente client',
-                    'moved_at' => now()->subHours(1),
-                    'user' => (object)['name' => 'Admin'],
-                ],
-                (object)[
-                    'id' => 2,
-                    'product' => (object)[
-                        'id' => 2,
-                        'name' => 'Moniteur 27"', 
-                        'barcode' => 'MON27-001'
-                    ],
-                    'type' => 'in',
-                    'quantity' => 5,
-                    'reason' => 'Réception fournisseur',
-                    'moved_at' => now()->subHours(3),
-                    'user' => (object)['name' => 'Admin'],
-                ],
-                (object)[
-                    'id' => 3,
-                    'product' => (object)[
-                        'id' => 3,
-                        'name' => 'Clavier mécanique', 
-                        'barcode' => 'KEY-MEC-001'
-                    ],
-                    'type' => 'out',
-                    'quantity' => 1,
-                    'reason' => 'Retour client',
-                    'moved_at' => now()->subHours(5),
-                    'user' => (object)['name' => 'Admin'],
-                ],
-            ];
-            session()->put('movements', $defaultMovements);
-            $movements = $defaultMovements;
-        }
 
         return view('movements.index', compact('movements'));
     }
@@ -79,38 +32,43 @@ class StockMovementController extends Controller
             'product_id' => 'required',
             'type' => 'required|in:in,out',
             'quantity' => 'required|integer|min:1',
+            'moved_at' => 'nullable|date',
             'reason' => 'nullable|string',
         ]);
 
-        // Récupérer les mouvements existants de la session
+        // Récupérer les mouvements existants
         $movements = session()->get('movements', []);
 
-        // Trouver le produit correspondant
+        // Produits disponibles
         $products = [
             1 => (object)['id' => 1, 'name' => 'Laptop Pro 15"', 'barcode' => 'LP15-001'],
             2 => (object)['id' => 2, 'name' => 'Moniteur 27"', 'barcode' => 'MON27-001'],
             3 => (object)['id' => 3, 'name' => 'Clavier mécanique', 'barcode' => 'KEY-MEC-001'],
         ];
 
-        // Créer le nouveau mouvement
+        // Calculer le nouvel ID
+        $newId = 1;
+        if (!empty($movements)) {
+            $ids = [];
+            foreach ($movements as $movement) {
+                $ids[] = $movement->id;
+            }
+            $newId = max($ids) + 1;
+        }
+
+        // Créer le mouvement simple
         $newMovement = (object)[
-            'id' => count($movements) > 0 ? max(array_column($movements, 'id')) + 1 : 1,
-            'product' => $products[$request->product_id] ?? (object)[
-                'id' => 999, 
-                'name' => 'Produit inconnu', 
-                'barcode' => 'UNKNOWN'
-            ],
+            'id' => $newId,
+            'product' => $products[$request->product_id] ?? (object)['id' => 999, 'name' => 'Produit inconnu'],
             'type' => $request->type,
             'quantity' => $request->quantity,
             'reason' => $request->reason,
-            'moved_at' => now(),
+            'moved_at' => $request->moved_at ? \Carbon\Carbon::parse($request->moved_at) : now(),
             'user' => (object)['name' => 'Admin'],
         ];
 
-        // Ajouter le mouvement
+        // Ajouter et sauvegarder
         $movements[] = $newMovement;
-        
-        // Sauvegarder en session
         session()->put('movements', $movements);
 
         return redirect()->route('movements.index')->with('success', 'Mouvement enregistré avec succès.');

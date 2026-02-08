@@ -60,8 +60,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Référence</label>
-                            <input type="text" value="{{ $inventory->reference }}" readonly 
+                            <input type="text" name="reference" value="{{ $inventory->reference }}" readonly 
                                    class="w-full bg-white/5 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white/60 cursor-not-allowed">
+                            <input type="hidden" name="reference" value="{{ $inventory->reference }}">
                         </div>
                         
                         <div>
@@ -94,6 +95,13 @@
                         <textarea name="note" rows="4" 
                                   class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300"
                                   placeholder="Ajoutez des notes ou observations...">{{ $inventory->note ?? '' }}</textarea>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="flex items-center text-white/80">
+                            <input type="checkbox" name="archive" value="1" class="mr-3 bg-white/10 border border-white/30 rounded text-blue-600 focus:ring-blue-500 focus:ring-2">
+                            <span>Archiver cet inventaire directement</span>
+                        </label>
                     </div>
 
                     <!-- Boutons d'action -->
