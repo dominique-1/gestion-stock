@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\ExportController;
 use App\Http\Controllers\Web\SmartAlertController;
 use App\Http\Controllers\Web\PredictionController;
 use App\Http\Controllers\MigrationController;
+use App\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes (non-authentifiés)
@@ -91,6 +92,10 @@ Route::get('/init-movements', function () {
 
 // Route pour les migrations
 Route::get('/migrate', [MigrationController::class, 'migrate'])->name('migrate');
+
+// Routes d'installation
+Route::get('/install', [InstallController::class, 'index'])->name('install.index');
+Route::post('/install/database', [InstallController::class, 'installDatabase'])->name('install.database');
 
 // Login routes (toujours accessibles)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
