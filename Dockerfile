@@ -1,29 +1,15 @@
-FROM composer:2.5 as build
-
-WORKDIR /app
-
-COPY . .
-
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-
-FROM php:8.1-fpm
-
-# Install Nginx
-RUN apt-get update && apt-get install -y nginx
-
-COPY --from=build /app /var/www/html
+FROM php:8.1-cli
 
 WORKDIR /var/www/html
 
-RUN cp .env.example .env
+COPY . .
 
-RUN php artisan key:generate
+RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
-RUN chown -R www-data:www-data /var/www/html
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Configure Nginx
-COPY nginx.conf /etc/nginx/sites-available/default
+RUN cp .env.example .env && php artisan key:generate
 
-EXPOSE 80
+EXPOSE 8000
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
