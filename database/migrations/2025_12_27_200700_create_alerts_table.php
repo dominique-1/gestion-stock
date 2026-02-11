@@ -10,11 +10,11 @@ return new class extends Migration
     {
         Schema::create('alerts', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['min_stock', 'overstock', 'expiry_soon']);
+            $table->string('type', 20); // 'min_stock', 'overstock', 'expiry_soon'
             $table->unsignedBigInteger('product_id')->nullable();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->string('message');
-            $table->enum('level', ['info', 'warning', 'critical'])->default('warning');
+            $table->string('level', 10)->default('warning'); // 'info', 'warning', 'critical'
             $table->boolean('is_read')->default(false);
             $table->unsignedBigInteger('created_by')->nullable();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
