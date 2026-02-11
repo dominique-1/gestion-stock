@@ -8,6 +8,9 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 FROM php:8.1-fpm
 
+# Install Nginx
+RUN apt-get update && apt-get install -y nginx
+
 COPY --from=build /app /var/www/html
 
 WORKDIR /var/www/html
@@ -18,6 +21,9 @@ RUN php artisan key:generate
 
 RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE 9000
+# Configure Nginx
+COPY nginx.conf /etc/nginx/sites-available/default
 
-CMD ["php-fpm"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
