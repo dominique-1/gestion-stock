@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\AlertController;
 use App\Http\Controllers\Web\ExportController;
 use App\Http\Controllers\Web\SmartAlertController;
 use App\Http\Controllers\Web\PredictionController;
+use App\Http\Controllers\MigrationController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes (non-authentifiés)
@@ -87,6 +88,9 @@ Route::get('/init-movements', function () {
     session()->put('movements', $defaultMovements);
     return redirect()->route('movements.index')->with('success', '3 mouvements initialisés avec succès !');
 })->name('init.movements');
+
+// Route pour les migrations
+Route::get('/migrate', [MigrationController::class, 'migrate'])->name('migrate');
 
 // Login routes (toujours accessibles)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
