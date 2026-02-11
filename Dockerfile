@@ -1,12 +1,16 @@
+FROM composer:2.5 as build
+
+WORKDIR /app
+
+COPY . .
+
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
 FROM php:8.1-cli
 
 WORKDIR /var/www/html
 
-COPY . .
-
-RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
-
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+COPY --from=build /app /var/www/html
 
 RUN cp .env.example .env && php artisan key:generate
 
