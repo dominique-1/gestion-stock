@@ -18,12 +18,15 @@ RUN cp .env.example .env && php artisan key:generate
 ENV APP_NAME="Gestion_Stock"
 ENV APP_ENV="production"
 ENV APP_DEBUG="false"
-ENV DB_CONNECTION="mysql"
-ENV DB_HOST="127.0.0.1"
-ENV DB_PORT="3306"
-ENV DB_DATABASE="gestion_stock"
-ENV DB_USERNAME="root"
-ENV DB_PASSWORD=""
+ENV DB_CONNECTION="pgsql"
+ENV DB_HOST="dpg-couronnement-oregon-a-1.render.com"
+ENV DB_PORT="5432"
+ENV DB_DATABASE="gestion_stock_2026"
+ENV DB_USERNAME="gestion_stock_2026_user"
+ENV DB_PASSWORD="your_password_here"
+
+# Attendre que la base de données soit prête et exécuter les migrations
+RUN php artisan migrate --force || echo "Migrations may have failed, will retry later..."
 
 EXPOSE 8000
 
