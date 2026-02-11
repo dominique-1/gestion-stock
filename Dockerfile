@@ -18,14 +18,12 @@ RUN cp .env.example .env && php artisan key:generate
 ENV APP_NAME="Gestion_Stock"
 ENV APP_ENV="production"
 ENV APP_DEBUG="false"
-ENV DB_CONNECTION="sqlite"
-ENV DB_DATABASE="/tmp/app.sqlite"
-
-# Créer la base de données SQLite et les tables automatiquement
-RUN mkdir -p /tmp && \
-    touch /tmp/app.sqlite && \
-    chmod 666 /tmp/app.sqlite && \
-    php artisan migrate --force || echo "Migrations may have failed, continuing..."
+ENV DB_CONNECTION="mysql"
+ENV DB_HOST="${DB_HOST:-127.0.0.1}"
+ENV DB_PORT="${DB_PORT:-3306}"
+ENV DB_DATABASE="${DB_DATABASE:-gestion_stock}"
+ENV DB_USERNAME="${DB_USERNAME:-root}"
+ENV DB_PASSWORD="${DB_PASSWORD:-}"
 
 EXPOSE 8000
 
