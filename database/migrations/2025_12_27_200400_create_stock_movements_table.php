@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->enum('type', ['in', 'out']);
+            $table->string('type', 5); // 'in', 'out'
             $table->string('reason'); // achat, vente, casse, expiration, correction, retour, etc.
             $table->integer('quantity');
             $table->timestamp('moved_at');

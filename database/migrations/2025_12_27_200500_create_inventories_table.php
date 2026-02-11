@@ -14,7 +14,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('note')->nullable();
-            $table->enum('status', ['draft', 'closed'])->default('draft');
+            $table->string('status', 10)->default('draft'); // 'draft', 'closed'
             $table->timestamps();
         });
     }
