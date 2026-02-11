@@ -24,8 +24,8 @@ ENV DB_DATABASE="/var/www/html/database/database.sqlite"
 # Créer la base de données SQLite
 RUN touch /var/www/html/database/database.sqlite
 
-# Exécuter les migrations Laravel
-RUN php artisan migrate --force
+# Exécuter les migrations Laravel (désactivé pour l'instant)
+# RUN php artisan migrate --force
 
 EXPOSE 8000
 
