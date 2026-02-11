@@ -21,11 +21,10 @@ ENV APP_DEBUG="false"
 ENV DB_CONNECTION="sqlite"
 ENV DB_DATABASE="/var/www/html/database/database.sqlite"
 
-# Créer la base de données et les tables automatiquement
+# Créer la base de données SQLite uniquement
 RUN mkdir -p /var/www/html/database && \
     touch /var/www/html/database/database.sqlite && \
-    chmod 666 /var/www/html/database/database.sqlite && \
-    php artisan migrate --force
+    chmod 666 /var/www/html/database/database.sqlite
 
 EXPOSE 8000
 
