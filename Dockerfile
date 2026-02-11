@@ -1,29 +1,23 @@
-FROM php:8.1-fpm
+FROM composer:2.5 as build
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /app
 
-# Set working directory
-WORKDIR /var/www/html
-
-# Copy application files
 COPY . .
 
-# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Copy .env file
+FROM php:8.1-fpm
+
+COPY --from=build /app /var/www/html
+
+WORKDIR /var/www/html
+
 RUN cp .env.example .env
 
-# Generate application key
 RUN php artisan key:generate
 
-# Set permissions
 RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html/storage
 
-# Expose port
 EXPOSE 9000
 
-# Start PHP-FPM
 CMD ["php-fpm"]
