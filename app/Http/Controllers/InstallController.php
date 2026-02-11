@@ -16,10 +16,23 @@ class InstallController extends Controller
     public function installDatabase()
     {
         try {
+            // Créer le dossier database s'il n'existe pas
+            $databaseDir = database_path();
+            if (!File::exists($databaseDir)) {
+                File::makeDirectory($databaseDir, 0755, true);
+            }
+            
             // Créer la base de données SQLite si elle n'existe pas
             $databasePath = database_path('database.sqlite');
             if (!File::exists($databasePath)) {
                 File::put($databasePath, '');
+                // Donner les permissions nécessaires
+                chmod($databasePath, 0644);
+            }
+            
+            // Vérifier que le fichier est bien créé
+            if (!File::exists($databasePath)) {
+                throw new \Exception("Impossible de créer le fichier de base de données");
             }
             
             // Exécuter les migrations
