@@ -18,13 +18,10 @@ RUN cp .env.example .env && php artisan key:generate
 ENV APP_NAME="Gestion_Stock"
 ENV APP_ENV="production"
 ENV APP_DEBUG="false"
-ENV DB_CONNECTION="sqlite"
-ENV DB_DATABASE="/var/www/html/database/database.sqlite"
 
-# Créer la base de données SQLite uniquement
-RUN mkdir -p /var/www/html/database && \
-    touch /var/www/html/database/database.sqlite && \
-    chmod 666 /var/www/html/database/database.sqlite
+# Pas de base de données - utilisation de fichiers
+ENV DB_CONNECTION="sqlite"
+ENV DB_DATABASE="/dev/null"
 
 EXPOSE 8000
 
