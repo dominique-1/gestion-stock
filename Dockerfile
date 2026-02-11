@@ -19,12 +19,13 @@ ENV APP_NAME="Gestion_Stock"
 ENV APP_ENV="production"
 ENV APP_DEBUG="false"
 ENV DB_CONNECTION="sqlite"
-ENV DB_DATABASE="/tmp/database.sqlite"
+ENV DB_DATABASE="/tmp/app.sqlite"
 
 # Créer la base de données SQLite et les tables automatiquement
-RUN touch /tmp/database.sqlite && \
-    chmod 664 /tmp/database.sqlite && \
-    php artisan migrate --force || true
+RUN mkdir -p /tmp && \
+    touch /tmp/app.sqlite && \
+    chmod 666 /tmp/app.sqlite && \
+    php artisan migrate --force || echo "Migrations may have failed, continuing..."
 
 EXPOSE 8000
 
