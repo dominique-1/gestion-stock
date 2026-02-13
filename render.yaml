@@ -4,46 +4,24 @@ services:
     name: gestion-stock
     env: php
     plan: free
-    buildCommand: "composer install --no-dev --optimize-autoloader --ignore-platform-reqs && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force"
+    buildCommand: "composer install --no-dev --optimize-autoloader --ignore-platform-reqs && php artisan config:cache && php artisan route:cache && php artisan view:cache && php public/setup_database.php"
     startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        value: https://gestion-stock.onrender.com
+        value: https://gestion-stock-ol7b.onrender.com
       - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        value: localhost
-      - key: DB_PORT
-        value: 3306
+        value: sqlite
       - key: DB_DATABASE
-        value: gestion_stock
-      - key: DB_USERNAME
-        value: gestion_stock_user
-      - key: DB_PASSWORD
-        generateValue: true
+        value: /var/data/database.sqlite
       - key: CACHE_DRIVER
         value: file
       - key: SESSION_DRIVER
         value: file
       - key: QUEUE_CONNECTION
         value: sync
-
-  # Service de base de données MySQL
-  - type: pserv
-    name: mysql-db
-    env: mysql
-    plan: free
-    healthCheckPath: /health
-    envVars:
-      - key: MYSQL_DATABASE
-        value: gestion_stock
-      - key: MYSQL_USER
-        value: gestion_stock_user
-      - key: MYSQL_PASSWORD
-        generateValue: true
