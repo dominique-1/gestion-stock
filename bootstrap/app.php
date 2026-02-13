@@ -43,6 +43,45 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
+| Auto-fix for Render.com SQLite Database
+|--------------------------------------------------------------------------
+*/
+
+// Forcer les variables d'environnement pour Render
+if (env('APP_ENV') === 'production') {
+    $_ENV['DB_CONNECTION'] = 'sqlite';
+    $_ENV['DB_DATABASE'] = '/var/data/database.sqlite';
+    putenv('DB_CONNECTION=sqlite');
+    putenv('DB_DATABASE=/var/data/database.sqlite');
+}
+
+if (env('APP_ENV') === 'production' && env('DB_CONNECTION') === 'sqlite') {
+    $dbPath = '/var/data/database.sqlite';
+    
+    // Create database if it doesn't exist
+    if (!file_exists($dbPath)) {
+        try {
+            // Create database directory if it doesn't exist
+            $dbDir = dirname($dbPath);
+            if (!is_dir($dbDir)) {
+                mkdir($dbDir, 0755, true);
+            }
+            
+            // Create empty database file
+            touch($dbPath);
+            chmod($dbPath, 0755);
+            
+            // Log that database was created
+            error_log("SQLite database created at: $dbPath");
+        } catch (Exception $e) {
+            // Log error but don't break the app
+            error_log("Auto-fix DB error: " . $e->getMessage());
+        }
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Return The Application
 |--------------------------------------------------------------------------
 |
