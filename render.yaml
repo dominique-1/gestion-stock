@@ -1,0 +1,49 @@
+services:
+  # Service web principal
+  - type: web
+    name: gestion-stock
+    env: php
+    plan: free
+    buildCommand: "chmod +x deploy.sh && ./deploy.sh"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        value: base64:QgpMsiEgxGyD2d4eB4wwXCpOmR8oo2LUF39yw05cjqY=
+      - key: APP_URL
+        value: https://votre-app.onrender.com
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: localhost
+      - key: DB_PORT
+        value: 3306
+      - key: DB_DATABASE
+        value: gestion_stock
+      - key: DB_USERNAME
+        value: gestion_stock_user
+      - key: DB_PASSWORD
+        generateValue: true
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+
+  # Service de base de données MySQL
+  - type: pserv
+    name: mysql-db
+    env: mysql
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: MYSQL_DATABASE
+        value: gestion_stock
+      - key: MYSQL_USER
+        value: gestion_stock_user
+      - key: MYSQL_PASSWORD
+        generateValue: true
