@@ -80,4 +80,11 @@ try {
 } catch (Exception $e) {
     echo "❌ Erreur: " . $e->getMessage();
 }
+
+// Forcer les variables d'environnement pour Laravel
+putenv('DB_CONNECTION=sqlite');
+putenv('DB_DATABASE=/var/data/database.sqlite');
+$_ENV['DB_CONNECTION'] = 'sqlite';
+$_ENV['DB_DATABASE'] = '/var/data/database.sqlite';
+
 ?>
