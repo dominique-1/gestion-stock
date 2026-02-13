@@ -5,7 +5,7 @@ services:
     env: php
     plan: free
     buildCommand: "composer install --no-dev --optimize-autoloader --ignore-platform-reqs && php artisan config:cache && php artisan route:cache && php artisan view:cache && php public/setup_database.php"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    startCommand: "php -S 0.0.0.0:$PORT -t public public/index_render.php"
     envVars:
       - key: APP_ENV
         value: production
