@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route as RouteFacade;
 
 // Guest routes (non-authentifiés)
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::get('/demo-messages', function () {
