@@ -15,7 +15,7 @@
                             Gestion des Produits
                         </span>
                     </h1>
-                    <p class="text-gray-300 text-lg">Catalogue complet avec recherche intelligente</p>
+                    <p class="text-gray-300 text-lg">Catalogue complet avec filtres intelligents</p>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="{{ route('products.create') }}" class="group bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl font-bold hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-green-500/50">
@@ -38,19 +38,7 @@
     <div class="px-8 py-8">
         <!-- Filtres spectaculaires -->
         <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 mb-8 border border-white/20">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="relative">
-                    <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Recherche</label>
-                    <div class="relative">
-                        <input type="text" name="q" value="{{ request('q') }}" 
-                               class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white placeholder-white/50 focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300"
-                               placeholder="🔍 Rechercher un produit...">
-                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
-                            <i class="fas fa-search text-white/50"></i>
-                        </div>
-                    </div>
-                </div>
-
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                     <label class="text-white/80 text-sm font-bold uppercase tracking-wider mb-2 block">Catégorie</label>
                     <select name="category_id" class="w-full bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/60 focus:bg-white/20 transition-all duration-300">
