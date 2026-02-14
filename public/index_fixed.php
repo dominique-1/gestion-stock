@@ -2,6 +2,12 @@
 
 define('LARAVEL_START', microtime(true));
 
+// FORCER SQLITE DANS LES VARIABLES D'ENVIRONNEMENT
+$_ENV['DB_CONNECTION'] = 'sqlite';
+$_ENV['DB_DATABASE'] = '/var/data/database.sqlite';
+putenv('DB_CONNECTION=sqlite');
+putenv('DB_DATABASE=/var/data/database.sqlite');
+
 // INITIALISATION DE LA BASE DE DONNÉES AVANT LARAVEL
 try {
     $dataDir = '/var/data';
