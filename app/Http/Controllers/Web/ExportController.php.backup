@@ -1,0 +1,413 @@
+<?php
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\StockMovement;
+use App\Models\Inventory;
+use App\Models\DemoProduct;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StockExport;
+use App\Exports\MovementsExport;
+use App\Services\SimplePdfGenerator;
+
+class ExportController extends Controller
+{
+    public function index()
+    {
+        return view('exports.index', [
+            'available_exports' => [
+                'CSV' => [
+                    ['name' => 'Stock complet', 'route' => 'exports.stock.csv', 'icon' => 'fa-file-csv', 'description' => 'Export de tous les produits et leurs stocks'],
+                    ['name' => 'Mouvements', 'route' => 'exports.movements.csv', 'icon' => 'fa-file-csv', 'description' => 'Historique des mouvements de stock'],
+                ],
+                'Excel' => [
+                    ['name' => 'Stock Excel', 'route' => 'exports.stock.xls', 'icon' => 'fa-file-excel', 'description' => 'Export Excel du stock'],
+                    ['name' => 'Mouvements Excel', 'route' => 'exports.movements.xls', 'icon' => 'fa-file-excel', 'description' => 'Export Excel des mouvements'],
+                ],
+                'PDF' => [
+                    ['name' => 'Inventaires', 'route' => 'exports.inventaires.pdf', 'icon' => 'fa-file-pdf', 'description' => 'Rapport PDF des inventaires'],
+                    ['name' => 'Liste produits', 'route' => 'exports.products.pdf', 'icon' => 'fa-file-pdf', 'description' => 'Catalogue PDF des produits'],
+                    ['name' => 'Rapport complet', 'route' => 'exports.reports.pdf', 'icon' => 'fa-file-pdf', 'description' => 'Rapport PDF complet'],
+                ],
+            ],
+            'stats' => [
+                'total_products' => Product::count(),
+                'total_movements' => StockMovement::count(),
+                'total_inventories' => Inventory::count(),
+            ]
+        ]);
+    }
+
+    public function test()
+    {
+        return response()->json([
+            'status' => 'ExportController working',
+            'timestamp' => now()->format('Y-m-d H:i:s'),
+            'available_exports' => [
+                'CSV' => ['stock.csv', 'movements.csv'],
+                'Excel' => ['stock.xls', 'movements.xls'],
+                'PDF' => ['inventaires.pdf', 'produits.pdf', 'rapport.pdf'],
+                'Product sheets' => ['product/{id}/sheet.pdf']
+            ]
+        ]);
+    }
+
+    public function stockCsv()
+    {
+        // Utiliser les vraies données de la base de données
+        $products = Product::with('category')->get();
+        
+        $csvData = $products->map(function($product) {
+            return [
+                'Nom' => $product->name,
+                'Référence' => $product->reference ?? '',
+                'Catégorie' => $product->category->name ?? '',
+                'Stock Actuel' => $product->current_stock,
+                'Stock Minimum' => $product->stock_min,
+                'Stock Optimal' => $product->stock_optimal,
+                'Prix' => $product->price ?? 0,
+                'Créé le' => $product->created_at->format('Y-m-d H:i:s'),
+            ];
+        })->toArray();
+
+        $csv = "Nom,Code-barres,Catégorie,Fournisseur,Prix,Stock actuel,Stock min,Stock optimal,Valeur stock\n";
+        foreach ($demoProducts as $p) {
+            $csv .= '"' . $p->name . '",';
+            $csv .= '"' . $p->barcode . '",';
+            $csv .= '"' . $p->category->name . '",';
+            $csv .= '"' . $p->supplier . '",';
+            $csv .= $p->price . ',';
+            $csv .= $p->current_stock . ',';
+            $csv .= $p->stock_min . ',';
+            $csv .= $p->stock_optimal . ',';
+            $csv .= $p->stockValue() . "\n";
+        }
+
+        $filename = 'stock_demo_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
+    }
+
+    public function movementsCsv(Request $request)
+    {
+        // Version démo avec données fictives
+        $demoMovements = [
+            (object)[
+                'moved_at' => now()->subDays(2),
+                'product' => (object)['name' => 'Produit A'],
+                'type' => 'entry',
+                'reason' => 'Nouvelle livraison',
+                'quantity' => 25,
+                'user' => (object)['name' => 'Admin'],
+                'note' => 'Réception fournisseur X'
+            ],
+            (object)[
+                'moved_at' => now()->subDays(1),
+                'product' => (object)['name' => 'Produit B'],
+                'type' => 'exit',
+                'reason' => 'Vente client',
+                'quantity' => 5,
+                'user' => (object)['name' => 'Vendeur'],
+                'note' => 'Facture #123'
+            ]
+        ];
+
+        $csv = "Date,Produit,Type,Raison,Quantité,Utilisateur,Note\n";
+        foreach ($demoMovements as $m) {
+            $csv .= $m->moved_at->format('Y-m-d H:i') . ',';
+            $csv .= '"' . $m->product->name . '",';
+            $csv .= $m->type . ',';
+            $csv .= '"' . $m->reason . '",';
+            $csv .= $m->quantity . ',';
+            $csv .= '"' . $m->user->name . '",';
+            $csv .= '"' . $m->note . '"' . "\n";
+        }
+
+        $filename = 'movements_demo_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
+    }
+
+    public function inventoryPdf(Inventory $inventory)
+    {
+        // Version démo avec données fictives
+        $demoInventory = (object)[
+            'id' => 1,
+            'performed_at' => now()->subDays(3),
+            'user' => (object)['name' => 'Admin'],
+            'status' => 'completed',
+            'note' => 'Inventaire de démonstration',
+            'lines' => [
+                (object)[
+                    'product' => (object)['name' => 'Produit A'],
+                    'qty_expected' => 50,
+                    'qty_counted' => 48,
+                    'qty_diff' => -2,
+                    'justification' => 'Produit manquant'
+                ],
+                (object)[
+                    'product' => (object)['name' => 'Produit B'],
+                    'qty_expected' => 25,
+                    'qty_counted' => 27,
+                    'qty_diff' => 2,
+                    'justification' => 'Erreur de comptage précédent'
+                ]
+            ]
+        ];
+        
+        return SimplePdfGenerator::generatePdfFromView('exports.inventory_pdf', ['inventory' => $demoInventory], 'inventory_' . $demoInventory->id . '.pdf');
+    }
+
+    public function stockExcel()
+    {
+        // Version démo simple CSV pour Excel (car les classes d'export nécessitent la BD)
+        $demoProducts = [
+            new DemoProduct([
+                'name' => 'Produit A',
+                'barcode' => '123456789',
+                'category' => (object)['name' => 'Catégorie 1'],
+                'supplier' => 'Fournisseur X',
+                'price' => 10.50,
+                'current_stock' => 50,
+                'stock_min' => 10,
+                'stock_optimal' => 100,
+            ]),
+            new DemoProduct([
+                'name' => 'Produit B',
+                'barcode' => '987654321',
+                'category' => (object)['name' => 'Catégorie 2'],
+                'supplier' => 'Fournisseur Y',
+                'price' => 25.75,
+                'current_stock' => 5,
+                'stock_min' => 15,
+                'stock_optimal' => 50,
+            ])
+        ];
+
+        $csv = "Nom,Code-barres,Catégorie,Fournisseur,Prix,Stock actuel,Stock min,Stock optimal,Valeur stock\n";
+        foreach ($demoProducts as $p) {
+            $csv .= '"' . $p->name . '",';
+            $csv .= '"' . $p->barcode . '",';
+            $csv .= '"' . $p->category->name . '",';
+            $csv .= '"' . $p->supplier . '",';
+            $csv .= $p->price . ',';
+            $csv .= $p->current_stock . ',';
+            $csv .= $p->stock_min . ',';
+            $csv .= $p->stock_optimal . ',';
+            $csv .= $p->stockValue() . "\n";
+        }
+
+        $filename = 'stock_excel_demo_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
+    }
+
+    public function movementsExcel(Request $request)
+    {
+        // Version démo simple CSV pour Excel
+        $demoMovements = [
+            (object)[
+                'moved_at' => now()->subDays(2),
+                'product' => (object)['name' => 'Produit A'],
+                'type' => 'entry',
+                'reason' => 'Nouvelle livraison',
+                'quantity' => 25,
+                'user' => (object)['name' => 'Admin'],
+                'note' => 'Réception fournisseur X'
+            ],
+            (object)[
+                'moved_at' => now()->subDays(1),
+                'product' => (object)['name' => 'Produit B'],
+                'type' => 'exit',
+                'reason' => 'Vente client',
+                'quantity' => 5,
+                'user' => (object)['name' => 'Vendeur'],
+                'note' => 'Facture #123'
+            ]
+        ];
+
+        $csv = "Date,Produit,Type,Raison,Quantité,Utilisateur,Note\n";
+        foreach ($demoMovements as $m) {
+            $csv .= $m->moved_at->format('Y-m-d H:i') . ',';
+            $csv .= '"' . $m->product->name . '",';
+            $csv .= $m->type . ',';
+            $csv .= '"' . $m->reason . '",';
+            $csv .= $m->quantity . ',';
+            $csv .= '"' . $m->user->name . '",';
+            $csv .= '"' . $m->note . '"' . "\n";
+        }
+
+        $filename = 'movements_excel_demo_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        return Response::make($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ]);
+    }
+
+    public function inventoriesPdf()
+    {
+        // Version démo avec données fictives
+        $demoInventories = [
+            (object)[
+                'id' => 1,
+                'performed_at' => now()->subDays(5),
+                'user' => (object)['name' => 'Admin'],
+                'status' => 'completed',
+                'note' => 'Inventaire mensuel'
+            ],
+            (object)[
+                'id' => 2,
+                'performed_at' => now()->subDays(2),
+                'user' => (object)['name' => 'Superviseur'],
+                'status' => 'in_progress',
+                'note' => 'Inventaire partiel zone A'
+            ]
+        ];
+        
+        return SimplePdfGenerator::generatePdfFromView('exports.inventories_pdf', ['inventories' => $demoInventories], 'inventaires_' . now()->format('Y-m-d_H-i-s') . '.pdf');
+    }
+
+    public function productsListPdf()
+    {
+        // Version démo avec données fictives
+        $demoProducts = [
+            new DemoProduct([
+                'name' => 'Produit A',
+                'barcode' => '123456789',
+                'category' => (object)['name' => 'Catégorie 1'],
+                'supplier' => 'Fournisseur X',
+                'price' => 10.50,
+                'current_stock' => 50,
+                'stock_min' => 10,
+                'stock_optimal' => 100,
+            ]),
+            new DemoProduct([
+                'name' => 'Produit B',
+                'barcode' => '987654321',
+                'category' => (object)['name' => 'Catégorie 2'],
+                'supplier' => 'Fournisseur Y',
+                'price' => 25.75,
+                'current_stock' => 5,
+                'stock_min' => 15,
+                'stock_optimal' => 50,
+            ]),
+            new DemoProduct([
+                'name' => 'Produit C',
+                'barcode' => '456789123',
+                'category' => (object)['name' => 'Catégorie 1'],
+                'supplier' => 'Fournisseur Z',
+                'price' => 5.25,
+                'current_stock' => 150,
+                'stock_min' => 20,
+                'stock_optimal' => 200,
+            ])
+        ];
+        
+        return SimplePdfGenerator::generatePdfFromView('exports.products_list_pdf', ['products' => $demoProducts], 'produits_' . now()->format('Y-m-d_H-i-s') . '.pdf');
+    }
+
+    public function reportsPdf()
+    {
+        // Version démo avec données fictives
+        $demoProducts = [
+            new DemoProduct([
+                'name' => 'Produit A',
+                'category' => (object)['name' => 'Catégorie 1'],
+                'current_stock' => 50,
+                'stock_min' => 10,
+                'price' => 10.50,
+            ]),
+            new DemoProduct([
+                'name' => 'Produit B',
+                'category' => (object)['name' => 'Catégorie 2'],
+                'current_stock' => 5,
+                'stock_min' => 15,
+                'price' => 25.75,
+            ])
+        ];
+        
+        $demoMovements = [
+            (object)[
+                'moved_at' => now()->subDays(2),
+                'product' => (object)['name' => 'Produit A'],
+                'type' => 'entry',
+                'quantity' => 25,
+                'user' => (object)['name' => 'Admin'],
+            ],
+            (object)[
+                'moved_at' => now()->subDays(1),
+                'product' => (object)['name' => 'Produit B'],
+                'type' => 'exit',
+                'quantity' => 5,
+                'user' => (object)['name' => 'Vendeur'],
+            ]
+        ];
+        
+        return SimplePdfGenerator::generatePdfFromView('exports.reports_pdf', [
+            'products' => collect($demoProducts),
+            'movements' => collect($demoMovements)
+        ], 'rapport_' . now()->format('Y-m-d_H-i-s') . '.pdf');
+    }
+
+    public function productSheetPdf($id)
+    {
+        // Version démo avec données fictives
+        $demoProduct = new DemoProduct([
+            'id' => $id,
+            'name' => 'Produit Démo ' . $id,
+            'barcode' => '123456789' . $id,
+            'category' => (object)['name' => 'Catégorie Démo'],
+            'supplier' => 'Fournisseur Démo',
+            'price' => 10.50 + $id,
+            'current_stock' => 50 - $id,
+            'stock_min' => 10,
+            'stock_optimal' => 100,
+            'expires_at' => now()->addDays(30),
+            'description' => 'Description du produit démo avec toutes les caractéristiques importantes.',
+            'documents' => collect([
+                (object)[
+                    'name' => 'Fiche technique.pdf',
+                    'original_name' => 'fiche_technique_produit1.pdf',
+                    'mime' => 'application/pdf',
+                    'size' => 245760,
+                    'type' => 'pdf'
+                ],
+                (object)[
+                    'name' => 'Photo produit.jpg',
+                    'original_name' => 'photo_produit1_v2.jpg',
+                    'mime' => 'image/jpeg',
+                    'size' => 524288,
+                    'type' => 'image'
+                ]
+            ]),
+            'stockMovements' => collect([
+                (object)[
+                    'moved_at' => now()->subDays(5),
+                    'type' => 'entry',
+                    'quantity' => 25,
+                    'user' => (object)['name' => 'Admin'],
+                    'reason' => 'Livraison fournisseur'
+                ],
+                (object)[
+                    'moved_at' => now()->subDays(2),
+                    'type' => 'exit',
+                    'quantity' => 5,
+                    'user' => (object)['name' => 'Vendeur'],
+                    'reason' => 'Vente client'
+                ]
+            ])
+        ]);
+        
+        return SimplePdfGenerator::generatePdfFromView('exports.product_sheet_pdf', ['product' => $demoProduct], 'product_' . $id . '_sheet.pdf');
+    }
+}

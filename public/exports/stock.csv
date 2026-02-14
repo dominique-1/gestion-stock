@@ -1,0 +1,4 @@
+Nom,Référence,Catégorie,Stock actuel,Stock min,Stock optimal,Prix
+Produit A,REF001,Électronique,50,10,100,299.99
+Produit B,REF002,Informatique,25,5,50,599.99
+Produit C,REF003,Bureau,100,20,150,149.99

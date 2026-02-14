@@ -30,7 +30,7 @@ echo "DB_USERNAME: " . (getenv('DB_USERNAME') ?: 'non défini') . PHP_EOL;
 echo PHP_EOL . "4. Test de connexion PDO directe:" . PHP_EOL;
 if (in_array('mysql', $pdo_drivers)) {
     try {
-        $dsn = 'mysql:host=' . (getenv('DB_HOST', '127.0.0.1') . ';dbname=' . (getenv('DB_DATABASE', 'stock'));
+        $dsn = 'mysql:host=' . getenv('DB_HOST', '127.0.0.1') . ';dbname=' . getenv('DB_DATABASE', 'stock');
         $pdo = new PDO($dsn, getenv('DB_USERNAME', 'root'), getenv('DB_PASSWORD', ''));
         echo "✅ Connexion PDO MySQL réussie" . PHP_EOL;
     } catch (PDOException $e) {
@@ -48,9 +48,10 @@ try {
     require_once 'vendor/autoload.php';
     $app = require_once 'bootstrap/app.php';
     
-    use Illuminate\Support\Facades\DB;
+    $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    $kernel->bootstrap();
     
-    $pdo = DB::connection()->getPdo();
+    $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
     echo "✅ Connexion Laravel réussie" . PHP_EOL;
     echo "Driver: " . $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) . PHP_EOL;
     echo "Database: " . $pdo->getAttribute(PDO::ATTR_DB_NAME) . PHP_EOL;

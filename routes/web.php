@@ -13,10 +13,11 @@ use App\Http\Controllers\Web\PredictionController;
 use App\Http\Controllers\MigrationController;
 use App\Http\Controllers\InstallController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route as RouteFacade;
 
 // Guest routes (non-authentifiés)
 Route::get('/', function () {
-    return view('landing');
+    return view('welcome');
 });
 
 Route::get('/demo-messages', function () {
@@ -90,6 +91,15 @@ Route::get('/init-movements', function () {
     return redirect()->route('movements.index')->with('success', '3 mouvements initialisés avec succès !');
 })->name('init.movements');
 
+// Route de diagnostic pour vérifier la présence des routes clés en production
+Route::get('/debug-routes', function () {
+    return response()->json([
+        'products_index_exists' => Route::has('products.index'),
+        'categories_index_exists' => Route::has('categories.index'),
+        'predictions_index_exists' => Route::has('predictions.index'),
+    ]);
+});
+
 // Route pour les migrations
 Route::get('/migrate', [MigrationController::class, 'migrate'])->name('migrate');
 
@@ -107,23 +117,24 @@ Route::get('/movements', [StockMovementController::class, 'index'])->name('movem
 Route::get('/movements/create', [StockMovementController::class, 'create'])->name('movements.create');
 Route::get('/movements/{movement}', [StockMovementController::class, 'show'])->name('movements.show');
 Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store');
-Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
-Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
-Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
-Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
-Route::get('/inventories/{inventory}/edit', [InventoryController::class, 'edit'])->name('inventories.edit');
-Route::delete('/inventories/{id}', [InventoryController::class, 'destroy'])->name('inventories.destroy');
-
-// Test d'archivage
-Route::post('/inventories/{id}/archive', [InventoryController::class, 'archive'])->name('inventories.archive');
-Route::post('/inventories/{id}/restore', [InventoryController::class, 'restore'])->name('inventories.restore');
-Route::post('/inventories/{id}/close', [InventoryController::class, 'close'])->name('inventories.close');
-Route::put('/inventories/{id}', [InventoryController::class, 'update'])->name('inventories.update');
 
 // Authenticated routes
 Route::middleware('session')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
+    
+    // Inventories (déplacées ici pour avoir accès à la session)
+    Route::get('/inventories', [InventoryController::class, 'index'])->name('inventories.index');
+    Route::get('/inventories/create', [InventoryController::class, 'create'])->name('inventories.create');
+    Route::post('/inventories', [InventoryController::class, 'store'])->name('inventories.store');
+    Route::get('/inventories/{inventory}', [InventoryController::class, 'show'])->name('inventories.show');
+    Route::get('/inventories/{inventory}/edit', [InventoryController::class, 'edit'])->name('inventories.edit');
+    Route::delete('/inventories/{id}', [InventoryController::class, 'destroy'])->name('inventories.destroy');
+    Route::get('/inventories/{id}/delete', [InventoryController::class, 'destroy'])->name('inventories.delete');
+    Route::post('/inventories/{id}/archive', [InventoryController::class, 'archive'])->name('inventories.archive');
+    Route::post('/inventories/{id}/restore', [InventoryController::class, 'restore'])->name('inventories.restore');
+    Route::post('/inventories/{id}/close', [InventoryController::class, 'close'])->name('inventories.close');
+    Route::put('/inventories/{id}', [InventoryController::class, 'update'])->name('inventories.update');
     
     // Products
     Route::resource('products', ProductController::class);
@@ -133,10 +144,15 @@ Route::middleware('session')->group(function () {
     // Categories
     Route::resource('categories', CategoryController::class);
     
+    // Prédictions
+    Route::get('/predictions', [PredictionController::class, 'index'])->name('predictions.index');
+    Route::get('/api/predictions', [PredictionController::class, 'apiPredictions'])->name('api.predictions');
+    
     // Stock Movements (seulement edit/update/destroy nécessitent une auth)
     Route::get('/movements/{movement}/edit', [StockMovementController::class, 'edit'])->name('movements.edit');
     Route::put('/movements/{movement}', [StockMovementController::class, 'update'])->name('movements.update');
     Route::delete('/movements/{movement}', [StockMovementController::class, 'destroy'])->name('movements.destroy');
+    Route::get('/movements/{movement}/delete', [StockMovementController::class, 'destroy'])->name('movements.delete');
     
     // Alerts
     Route::resource('alerts', AlertController::class);
@@ -148,10 +164,6 @@ Route::middleware('session')->group(function () {
     Route::get('alerts/test-email', [AlertController::class, 'testEmail'])->name('alerts.test-email');
     Route::get('alerts/cleanup', [AlertController::class, 'cleanup'])->name('alerts.cleanup');
     
-    
-    // Prédictions
-    Route::get('/predictions', [PredictionController::class, 'index'])->name('predictions.index');
-    Route::get('/api/predictions', [PredictionController::class, 'apiPredictions'])->name('api.predictions');
     
     // Smart Alerts - Nouveau système intelligent
     Route::get('/smart-alerts', [SmartAlertController::class, 'index'])->name('smart-alerts.index');

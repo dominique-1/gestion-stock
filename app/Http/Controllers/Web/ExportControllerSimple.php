@@ -3,29 +3,26 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
-use App\Models\StockMovement;
-use App\Models\Inventory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class ExportController extends Controller
+class ExportControllerSimple extends Controller
 {
     public function index()
     {
         return view('exports.index', [
             'available_exports' => [
                 'CSV' => [
-                    ['name' => 'Stock complet', 'route' => 'exports.stock.csv', 'icon' => 'fa-file-csv', 'description' => 'Export de tous les produits et leurs stocks'],
-                    ['name' => 'Mouvements', 'route' => 'exports.movements.csv', 'icon' => 'fa-file-csv', 'description' => 'Historique des mouvements de stock'],
+                    ['name' => 'Stock complet', 'route' => 'exports.stock.csv', 'icon' => '📊', 'description' => 'Export de tous les produits et leurs stocks'],
+                    ['name' => 'Mouvements', 'route' => 'exports.movements.csv', 'icon' => '📋', 'description' => 'Historique des mouvements de stock'],
                 ],
                 'Excel' => [
-                    ['name' => 'Stock Excel', 'route' => 'exports.stock.xls', 'icon' => 'fa-file-excel', 'description' => 'Export Excel du stock'],
-                    ['name' => 'Mouvements Excel', 'route' => 'exports.movements.xls', 'icon' => 'fa-file-excel', 'description' => 'Export Excel des mouvements'],
+                    ['name' => 'Stock Excel', 'route' => 'exports.stock.xls', 'icon' => '📈', 'description' => 'Export Excel du stock'],
+                    ['name' => 'Mouvements Excel', 'route' => 'exports.movements.xls', 'icon' => '📊', 'description' => 'Export Excel des mouvements'],
                 ],
                 'PDF' => [
-                    ['name' => 'Inventaires', 'route' => 'exports.inventaires.pdf', 'icon' => 'fa-file-pdf', 'description' => 'Rapport PDF des inventaires'],
-                    ['name' => 'Liste produits', 'route' => 'exports.products.pdf', 'icon' => 'fa-file-pdf', 'description' => 'Catalogue PDF des produits'],
+                    ['name' => 'Inventaires', 'route' => 'exports.inventaires.pdf', 'icon' => '📄', 'description' => 'Rapport PDF des inventaires'],
+                    ['name' => 'Liste produits', 'route' => 'exports.products.pdf', 'icon' => '📑', 'description' => 'Catalogue PDF des produits'],
                 ],
             ],
             'stats' => [

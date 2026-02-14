@@ -43,9 +43,9 @@ class ProductSeeder extends Seeder
                 'supplier' => 'OfficeSupply',
                 'price' => 4.99,
                 'category_id' => $catBureau->id,
-                'stock_min' => $faker->numberBetween(0, 5),
-                'stock_optimal' => $faker->numberBetween(2, 20),
-                'current_stock' => $faker->numberBetween(0, 100),
+                'stock_min' => 5,
+                'stock_optimal' => 20,
+                'current_stock' => 50,
                 'description' => 'Stylos bleus',
             ],
             [

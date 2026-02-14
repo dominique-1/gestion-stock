@@ -1,0 +1,4 @@
+Date,Produit,Type,Quantité,Utilisateur,Raison
+2025-01-13 10:30:00,Produit A,entrée,10,Admin,Réception stock
+2025-01-12 15:45:00,Produit B,sortie,5,Admin,Vente
+2025-01-11 09:15:00,Produit C,entrée,20,Admin,Réapprovisionnement

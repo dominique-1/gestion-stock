@@ -1,5 +1,5 @@
 <!-- Boîte de dialogue de suppression réutilisable -->
-<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+<div id="deleteModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50" style="display: none !important;">
     <div class="bg-gradient-to-br from-red-900 via-pink-900 to-purple-900 rounded-3xl p-8 border border-white/20 shadow-2xl max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0" id="deleteModalContent">
         <div class="text-center">
             <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
@@ -31,6 +31,12 @@
 window.showDeleteModal = function(id, message, formId = null) {
     console.log('showDeleteModal appelé avec:', { id, message, formId });
     
+    // Fermer toute modal existante
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
     window.currentDeleteId = id;
     window.currentDeleteForm = formId;
     
@@ -39,57 +45,36 @@ window.showDeleteModal = function(id, message, formId = null) {
         messageEl.textContent = message;
     }
     
-    const modal = document.getElementById('deleteModal');
-    const content = document.getElementById('deleteModalContent');
-    
-    if (modal && content) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
-        setTimeout(() => {
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        }, 10);
-    } else {
-        console.error('Modal ou contenu non trouvé');
+    if (modal) {
+        modal.style.display = 'flex';
     }
 };
 
 window.closeDeleteModal = function() {
     const modal = document.getElementById('deleteModal');
-    const content = document.getElementById('deleteModalContent');
-    
-    if (modal && content) {
-        content.classList.remove('scale-100', 'opacity-100');
-        content.classList.add('scale-95', 'opacity-0');
-        
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            window.currentDeleteId = null;
-            window.currentDeleteForm = null;
-        }, 300);
+    if (modal) {
+        modal.style.display = 'none';
     }
+    window.currentDeleteId = null;
+    window.currentDeleteForm = null;
 };
 
 window.confirmDelete = function() {
-    console.log('confirmDelete appelé, currentDeleteId:', window.currentDeleteId, 'currentDeleteForm:', window.currentDeleteForm);
+    console.log('confirmDelete appelé');
     
     if (window.currentDeleteForm) {
         const form = document.getElementById(window.currentDeleteForm);
         if (form) {
-            console.log('Soumission du formulaire:', window.currentDeleteForm);
             form.submit();
-        } else {
-            console.error('Formulaire non trouvé:', window.currentDeleteForm);
+            return;
         }
-    } else if (window.currentDeleteId) {
+    }
+    
+    if (window.currentDeleteId) {
         const form = document.getElementById(`deleteForm-${window.currentDeleteId}`);
         if (form) {
-            console.log('Soumission du formulaire par ID:', `deleteForm-${window.currentDeleteId}`);
             form.submit();
-        } else {
-            console.error('Formulaire non trouvé avec ID:', `deleteForm-${window.currentDeleteId}`);
+            return;
         }
     }
 };

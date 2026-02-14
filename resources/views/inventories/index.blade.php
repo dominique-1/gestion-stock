@@ -196,13 +196,11 @@
                                         </button>
                                     </form>
                                 @endif
-                                <form action="{{ route('inventories.destroy', $inventory->id) }}" method="POST" class="flex-1" id="deleteForm-{{ $inventory->id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="showDeleteModal({{ $inventory->id }}, 'Êtes-vous sûr de vouloir supprimer cet inventaire ? Cette action est irréversible.', 'deleteForm-{{ $inventory->id }}')" class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl font-semibold transition-all duration-300 group-hover:scale-110">
+                                <a href="{{ route('inventories.delete', $inventory->id) }}" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet inventaire ? Cette action est irréversible.')"
+                                       class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl font-semibold transition-all duration-300 group-hover:scale-110">
                                         <i class="fas fa-trash mr-2"></i>Supprimer
-                                    </button>
-                                </form>
+                                    </a>
                             </div>
                         </div>
                     </div>

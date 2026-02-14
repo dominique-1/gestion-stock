@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductDocument;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -45,8 +46,73 @@ class ProductController extends Controller
             }
         }
 
+        // #region agent log
+        try {
+            $logPath = base_path('.cursor/debug.log');
+            $logDir = dirname($logPath);
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+
+            $dbOk = true;
+            $dbError = null;
+            try {
+                DB::connection()->getPdo();
+            } catch (\Throwable $dbEx) {
+                $dbOk = false;
+                $dbError = substr($dbEx->getMessage(), 0, 200);
+            }
+
+            $entry = [
+                'id' => 'log_'.uniqid(),
+                'timestamp' => (int) round(microtime(true) * 1000),
+                'runId' => 'pre-fix',
+                'hypothesisId' => 'H2',
+                'location' => 'ProductController@index',
+                'message' => 'Before products query',
+                'data' => [
+                    'db_ok' => $dbOk,
+                    'db_error' => $dbError,
+                    'filters' => [
+                        'q' => $request->q ?? null,
+                        'category_id' => $request->category_id ?? null,
+                        'stock_status' => $request->stock_status ?? null,
+                    ],
+                ],
+            ];
+            file_put_contents($logPath, json_encode($entry).PHP_EOL, FILE_APPEND);
+        } catch (\Throwable $e) {
+            // ignore logging errors
+        }
+        // #endregion agent log
+
         $products = $query->get();
         $categories = Category::all();
+
+        // #region agent log
+        try {
+            $logPath = base_path('.cursor/debug.log');
+            $logDir = dirname($logPath);
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+            $entry = [
+                'id' => 'log_'.uniqid(),
+                'timestamp' => (int) round(microtime(true) * 1000),
+                'runId' => 'pre-fix',
+                'hypothesisId' => 'H3',
+                'location' => 'ProductController@index',
+                'message' => 'After products query',
+                'data' => [
+                    'products_count' => $products->count(),
+                    'categories_count' => $categories->count(),
+                ],
+            ];
+            file_put_contents($logPath, json_encode($entry).PHP_EOL, FILE_APPEND);
+        } catch (\Throwable $e) {
+            // ignore logging errors
+        }
+        // #endregion agent log
 
         return view('products.index', compact('products', 'categories'));
     }

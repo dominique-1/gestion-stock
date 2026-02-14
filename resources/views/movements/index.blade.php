@@ -212,13 +212,11 @@
                                        class="w-10 h-10 bg-purple-500/20 hover:bg-purple-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                                         <i class="fas fa-edit text-purple-400"></i>
                                     </a>
-                                    <form method="POST" action="{{ route('movements.destroy', $movement->id) }}" class="inline" id="deleteForm-{{ $movement->id }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" onclick="showDeleteModal({{ $movement->id }}, 'Êtes-vous sûr de vouloir supprimer ce mouvement de stock ? Cette action est irréversible.', 'deleteForm-{{ $movement->id }}')" class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                                            <i class="fas fa-trash text-red-400"></i>
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('movements.delete', $movement->id) }}" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ? Cette action est irréversible.')"
+                                       class="w-10 h-10 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                                        <i class="fas fa-trash text-red-400"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>
