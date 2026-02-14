@@ -3,7 +3,6 @@
 use Illuminate\Support\Str;
 
 return [
-
     'default' => env('DB_CONNECTION', 'sqlite'),
 
     'connections' => [
@@ -32,11 +31,11 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'timeout' => 60,
         ],
 
         'pgsql' => [
             'driver' => 'pgsql',
-            // On a supprimé la ligne 'url' pour éviter le conflit sur Render
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'forge'),
@@ -48,7 +47,6 @@ return [
             'search_path' => 'public',
             'sslmode' => 'prefer',
         ],
-
     ],
 
     'migrations' => 'migrations',
@@ -79,8 +77,5 @@ return [
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
-
     ],
-
-];" " 
-"" 
+];
