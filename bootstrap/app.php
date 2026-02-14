@@ -6,8 +6,8 @@
 |--------------------------------------------------------------------------
 |
 | The first thing we will do is create a new Laravel application instance
-| which serves as the "glue" for all the components of Laravel, and is
-| the IoC container for the system binding all of the various parts.
+| which serves as the "glue" for all the components of Laravel, and
+| is the IoC container for the system binding all of the various parts.
 |
 */
 
@@ -22,7 +22,7 @@ $app = new Illuminate\Foundation\Application(
 |
 | Next, we need to bind some important interfaces into the container so
 | we will be able to resolve them when needed. The kernels serve the
-| incoming requests to this application from both the web and CLI.
+| requestors to this container so we can resolve them from here.
 |
 */
 
@@ -43,45 +43,6 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
-| Auto-fix for Render.com SQLite Database
-|--------------------------------------------------------------------------
-*/
-
-// Forcer les variables d'environnement pour Render
-if (env('APP_ENV') === 'production') {
-    $_ENV['DB_CONNECTION'] = 'sqlite';
-    $_ENV['DB_DATABASE'] = '/var/data/database.sqlite';
-    putenv('DB_CONNECTION=sqlite');
-    putenv('DB_DATABASE=/var/data/database.sqlite');
-}
-
-if (env('APP_ENV') === 'production' && env('DB_CONNECTION') === 'sqlite') {
-    $dbPath = '/var/data/database.sqlite';
-    
-    // Create database if it doesn't exist
-    if (!file_exists($dbPath)) {
-        try {
-            // Create database directory if it doesn't exist
-            $dbDir = dirname($dbPath);
-            if (!is_dir($dbDir)) {
-                mkdir($dbDir, 0755, true);
-            }
-            
-            // Create empty database file
-            touch($dbPath);
-            chmod($dbPath, 0755);
-            
-            // Log that database was created
-            error_log("SQLite database created at: $dbPath");
-        } catch (Exception $e) {
-            // Log error but don't break the app
-            error_log("Auto-fix DB error: " . $e->getMessage());
-        }
-    }
-}
-
-/*
-|--------------------------------------------------------------------------
 | Return The Application
 |--------------------------------------------------------------------------
 |
@@ -90,5 +51,22 @@ if (env('APP_ENV') === 'production' && env('DB_CONNECTION') === 'sqlite') {
 | from the actual running of the application and sending responses.
 |
 */
+
+// FORCER LES VARIABLES D'ENVIRONNEMENT POUR POSTGRESQL
+if (env('APP_ENV') === 'production') {
+    $_ENV['DB_CONNECTION'] = 'pgsql';
+    $_ENV['DB_HOST'] = 'dpg-d668asmsb7us73ckg96g-a';
+    $_ENV['DB_PORT'] = '5432';
+    $_ENV['DB_DATABASE'] = 'gestion_stock_2026';
+    $_ENV['DB_USERNAME'] = 'gestion_stock_2026_user';
+    $_ENV['DB_PASSWORD'] = 'D8gXzuYh4Luitly3Ly9Kv0Rkwpk64nm2';
+    
+    putenv('DB_CONNECTION=pgsql');
+    putenv('DB_HOST=dpg-d668asmsb7us73ckg96g-a');
+    putenv('DB_PORT=5432');
+    putenv('DB_DATABASE=gestion_stock_2026');
+    putenv('DB_USERNAME=gestion_stock_2026_user');
+    putenv('DB_PASSWORD=D8gXzuYh4Luitly3Ly9Kv0Rkwpk64nm2');
+}
 
 return $app;
