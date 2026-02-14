@@ -11,28 +11,20 @@ services:
       php artisan view:clear
       php artisan migrate --force
       php artisan db:seed --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    startCommand: php -S 0.0.0.0:$PORT -t public public/index.php
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
         value: https://gestion-stock-ol7b.onrender.com
       - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        value: dpg-d668asmsb7us73ckg96g-a
-      - key: DB_PORT
-        value: 5432
+        value: sqlite
       - key: DB_DATABASE
-        value: gestion_stock_2026
-      - key: DB_USERNAME
-        value: gestion_stock_2026_user
-      - key: DB_PASSWORD
-        value: D8gXzuYh4Luitly3Ly9Kv0Rkwpk64nm2
+        value: /var/data/database.sqlite
       - key: CACHE_DRIVER
         value: file
       - key: SESSION_DRIVER
